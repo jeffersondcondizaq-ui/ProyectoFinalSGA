@@ -1,4 +1,4 @@
 package com.jefferson.notifications.application.service;
 
-public class HespedService {
+public class HuespedService {
 }

@@ -1,4 +1,4 @@
 package com.jefferson.notifications.domain.model.folio;
 
-public abstract class MovimientosFolio {
+public abstract class MovimientoFolio {
 }
