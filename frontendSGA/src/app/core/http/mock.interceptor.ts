@@ -61,6 +61,11 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
     );
   }
 
+  if (req.method === 'POST' && ruta === '/reservas/portal') {
+    // Siempre responde la reserva Pendiente R-003; el backend real crea una nueva con su código.
+    return next(req.clone({ method: 'GET', url: '/mocks/reservas/R-003.json', body: null }));
+  }
+
   if (req.method === 'PUT') {
     // Lee el JSON actual y le mezcla lo que se envió, como si el backend lo hubiera guardado.
     return next(req.clone({ method: 'GET', url: `/mocks${ruta}.json`, body: null })).pipe(

@@ -1,0 +1,14 @@
+{
+  "codigo": "APT-201",
+  "nombre": "Casa del Valle",
+  "numDormitorios": 3,
+  "capacidadMaxima": 6,
+  "caracteristicas": ["Balcón", "Cocina amplia", "Zona de BBQ"],
+  "estado": "PENDIENTE_PREPARACION",
+  "activo": true,
+  "tarifas": [
+    { "tipoTemporada": "BAJA", "valorPersonaNoche": 65000 },
+    { "tipoTemporada": "MEDIA", "valorPersonaNoche": 90000 },
+    { "tipoTemporada": "ALTA", "valorPersonaNoche": 120000 }
+  ]
+}

@@ -1,5 +1,129 @@
-<app-en-construccion
-  titulo="Nueva reserva"
-  descripcion="Ocupantes con fecha de nacimiento, resumen del valor y anticipo del 30 %."
-  tarjeta="[FE] Huésped: crear reserva Portal con ocupantes"
-/>
+<h1>Nueva reserva</h1>
+
+@if (!datosCompletos()) {
+  <mat-card appearance="outlined">
+    <mat-card-content>
+      <p>Faltan las fechas de la estadía. Busca de nuevo y elige un apartamento.</p>
+      <a matButton="filled" routerLink="/huesped/disponibilidad">Buscar apartamentos</a>
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <mat-stepper linear orientation="vertical" (selectionChange)="cambioDePaso($event)">
+    <!-- 1. Apartamento y fechas -->
+    <mat-step label="Apartamento y fechas">
+      @if (apartamento(); as apto) {
+        <h2>{{ apto.nombre }}</h2>
+        <p class="detalle">
+          {{ apto.codigo }} · {{ apto.numDormitorios }} dormitorios · hasta
+          {{ apto.capacidadMaxima }} personas
+        </p>
+        <mat-chip-set>
+          @for (c of apto.caracteristicas; track c) {
+            <mat-chip>{{ c }}</mat-chip>
+          }
+        </mat-chip-set>
+      } @else {
+        <p>Cargando apartamento...</p>
+      }
+      <dl class="estadia">
+        <div>
+          <dt>Entrada</dt>
+          <dd>{{ entrada() }}</dd>
+        </div>
+        <div>
+          <dt>Salida</dt>
+          <dd>{{ salida() }}</dd>
+        </div>
+        <div>
+          <dt>Personas</dt>
+          <dd>{{ cantidadPersonas() }}</dd>
+        </div>
+      </dl>
+      <div class="botones">
+        <a
+          matButton
+          routerLink="/huesped/disponibilidad"
+          [queryParams]="{ entrada: entrada(), salida: salida(), personas: personas() }"
+        >
+          Cambiar búsqueda
+        </a>
+        <button matButton="filled" matStepperNext>Continuar</button>
+      </div>
+    </mat-step>
+
+    <!-- 2. Ocupantes -->
+    <mat-step label="Ocupantes" [stepControl]="ocupantes">
+      <p>
+        Registra a todas las personas que se hospedan, incluido tú si también te alojas. Los
+        niños cuentan para la capacidad; los menores de 6 años no pagan.
+      </p>
+      @for (ocupante of ocupantes.controls; track $index) {
+        <div class="ocupante" [formGroup]="ocupante">
+          <span class="numero">{{ $index + 1 }}</span>
+          <mat-form-field appearance="outline">
+            <mat-label>Nombre completo</mat-label>
+            <input matInput formControlName="nombre" />
+            @if (ocupante.controls.nombre.hasError('required')) {
+              <mat-error>Escribe el nombre</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Fecha de nacimiento</mat-label>
+            <input matInput [matDatepicker]="picker" [max]="hoy" formControlName="fechaNacimiento" />
+            <mat-datepicker-toggle matIconSuffix [for]="picker" />
+            <mat-datepicker #picker startView="multi-year" />
+            @if (ocupante.controls.fechaNacimiento.hasError('required')) {
+              <mat-error>Elige la fecha</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      }
+      <div class="botones">
+        <button matButton matStepperPrevious>Atrás</button>
+        <button matButton="filled" matStepperNext (click)="ocupantes.markAllAsTouched()">
+          Ver resumen
+        </button>
+      </div>
+    </mat-step>
+
+    <!-- 3. Resumen y confirmación -->
+    <mat-step label="Resumen y confirmación">
+      @if (cotizando()) {
+        <p>Calculando el valor de la estadía...</p>
+      } @else if (cotizacion(); as cot) {
+        <h3>Ocupantes</h3>
+        <ul class="lista-ocupantes">
+          @for (o of ocupantes.getRawValue(); track $index) {
+            <li>{{ o.nombre }}</li>
+          }
+        </ul>
+
+        <h3>Valor de la estadía</h3>
+        <app-desglose-cotizacion [cotizacion]="cot" />
+        @if (usarMocks) {
+          <p class="aviso-mock">Con mocks la cotización es un ejemplo fijo.</p>
+        }
+
+        <div class="plazo">
+          <mat-icon>schedule</mat-icon>
+          <p>
+            La reserva queda <strong>Pendiente</strong>. Tienes <strong>24 horas</strong> para
+            pagar el anticipo desde <em>Mis reservas</em>; si no, se cancela automáticamente.
+          </p>
+        </div>
+
+        <div class="botones">
+          <button matButton matStepperPrevious [disabled]="creando()">Atrás</button>
+          <button matButton="filled" (click)="confirmar()" [disabled]="creando()">
+            {{ creando() ? 'Creando reserva...' : 'Confirmar reserva' }}
+          </button>
+        </div>
+      } @else {
+        <p>No se pudo calcular el valor. Revisa los ocupantes e inténtalo de nuevo.</p>
+        <div class="botones">
+          <button matButton matStepperPrevious>Atrás</button>
+        </div>
+      }
+    </mat-step>
+  </mat-stepper>
+}

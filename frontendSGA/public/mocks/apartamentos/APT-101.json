@@ -1,0 +1,14 @@
+{
+  "codigo": "APT-101",
+  "nombre": "Suite Cocora",
+  "numDormitorios": 2,
+  "capacidadMaxima": 4,
+  "caracteristicas": ["Balcón", "Vista a las montañas", "Chimenea"],
+  "estado": "PREPARADO",
+  "activo": true,
+  "tarifas": [
+    { "tipoTemporada": "BAJA", "valorPersonaNoche": 80000 },
+    { "tipoTemporada": "MEDIA", "valorPersonaNoche": 100000 },
+    { "tipoTemporada": "ALTA", "valorPersonaNoche": 130000 }
+  ]
+}
