@@ -1,6 +1,33 @@
-.demo {
+:host {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  justify-content: center;
+  padding-top: 32px;
+}
+
+.tarjeta {
+  width: 100%;
+  max-width: 400px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 16px;
+}
+
+.registro {
   margin-top: 16px;
+  text-align: center;
+}
+
+.mocks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-surface-container);
+  font: var(--mat-sys-body-small);
 }

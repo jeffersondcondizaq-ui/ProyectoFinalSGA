@@ -1,0 +1,33 @@
+:host {
+  display: flex;
+  justify-content: center;
+  padding: 32px 0;
+}
+
+.tarjeta {
+  width: 100%;
+  max-width: 640px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+h3 {
+  margin: 16px 0 8px;
+  font: var(--mat-sys-title-small);
+  color: var(--mat-sys-primary);
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0 16px;
+}
+
+.login {
+  margin-top: 16px;
+  text-align: center;
+}

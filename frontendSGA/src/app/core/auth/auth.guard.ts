@@ -20,3 +20,9 @@ export const rolGuard =
     }
     return sesion.tieneRol(...roles) || router.createUrlTree(['/inicio']);
   };
+
+  /** Para login y registro: si ya hay sesión, no tiene sentido entrar ahí. */
+export const sinSesionGuard: CanMatchFn = () => {
+  const sesion = inject(SesionService);
+  return !sesion.autenticado() || inject(Router).createUrlTree(['/inicio']);
+};

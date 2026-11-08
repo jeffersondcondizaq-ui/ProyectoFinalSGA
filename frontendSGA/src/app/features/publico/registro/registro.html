@@ -1,5 +1,124 @@
-<app-en-construccion
-  titulo="Crear cuenta"
-  descripcion="Registro de un huésped nuevo con sus datos personales y credenciales."
-  tarjeta="[FE] Login, registro y guards por rol"
-/>
+<mat-card class="tarjeta" appearance="outlined">
+  <mat-card-header>
+    <mat-card-title>Crear cuenta</mat-card-title>
+    <mat-card-subtitle>Regístrate como huésped para reservar</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <form [formGroup]="form" (ngSubmit)="registrar()">
+      <h3>Datos personales</h3>
+      <div class="fila">
+        <mat-form-field appearance="outline">
+          <mat-label>Documento</mat-label>
+          <input matInput formControlName="documento" inputmode="numeric" />
+          @if (form.controls.documento.hasError('required')) {
+            <mat-error>Escribe tu documento</mat-error>
+          } @else if (form.controls.documento.hasError('pattern')) {
+            <mat-error>Solo números, entre 6 y 10 dígitos</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha de nacimiento</mat-label>
+          <input matInput [matDatepicker]="picker" [max]="hoy" formControlName="fechaNacimiento" />
+          <mat-datepicker-toggle matIconSuffix [for]="picker" />
+          <mat-datepicker #picker startView="multi-year" />
+          @if (form.controls.fechaNacimiento.hasError('required')) {
+            <mat-error>Elige tu fecha de nacimiento</mat-error>
+          } @else if (form.controls.fechaNacimiento.hasError('matDatepickerMax')) {
+            <mat-error>No puede ser una fecha futura</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre completo</mat-label>
+        <input matInput formControlName="nombre" autocomplete="name" />
+        @if (form.controls.nombre.hasError('required')) {
+          <mat-error>Escribe tu nombre</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="fila">
+        <mat-form-field appearance="outline">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="telefono" inputmode="tel" autocomplete="tel" />
+          @if (form.controls.telefono.hasError('required')) {
+            <mat-error>Escribe tu teléfono</mat-error>
+          } @else if (form.controls.telefono.hasError('pattern')) {
+            <mat-error>Debe tener 10 dígitos</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Correo</mat-label>
+          <input matInput type="email" formControlName="correo" autocomplete="email" />
+          @if (form.controls.correo.hasError('required')) {
+            <mat-error>Escribe tu correo</mat-error>
+          } @else if (form.controls.correo.hasError('email')) {
+            <mat-error>Correo no válido</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <h3>Acceso</h3>
+      <mat-form-field appearance="outline">
+        <mat-label>Usuario</mat-label>
+        <input matInput formControlName="usuario" autocomplete="username" />
+        <mat-hint>Entre 4 y 20 caracteres: letras, números, punto o guion bajo</mat-hint>
+        @if (form.controls.usuario.hasError('required')) {
+          <mat-error>Escribe un usuario</mat-error>
+        } @else if (form.controls.usuario.hasError('pattern')) {
+          <mat-error>Entre 4 y 20 caracteres, sin espacios</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="fila">
+        <mat-form-field appearance="outline">
+          <mat-label>Contraseña</mat-label>
+          <input
+            matInput
+            [type]="verContrasena() ? 'text' : 'password'"
+            formControlName="contrasena"
+            autocomplete="new-password"
+          />
+          <button
+            matIconButton
+            matIconSuffix
+            type="button"
+            [attr.aria-label]="verContrasena() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+            (click)="verContrasena.set(!verContrasena())"
+          >
+            <mat-icon>{{ verContrasena() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.controls.contrasena.hasError('required')) {
+            <mat-error>Escribe una contraseña</mat-error>
+          } @else if (form.controls.contrasena.hasError('minlength')) {
+            <mat-error>Mínimo 6 caracteres</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Confirmar contraseña</mat-label>
+          <input
+            matInput
+            [type]="verContrasena() ? 'text' : 'password'"
+            formControlName="confirmacion"
+            autocomplete="new-password"
+          />
+          @if (form.controls.confirmacion.hasError('required')) {
+            <mat-error>Repite la contraseña</mat-error>
+          } @else if (form.controls.confirmacion.hasError('noCoincide')) {
+            <mat-error>Las contraseñas no coinciden</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <button matButton="filled" type="submit" [disabled]="enviando()">
+        {{ enviando() ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </button>
+    </form>
+
+    <p class="login">¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a></p>
+  </mat-card-content>
+</mat-card>
