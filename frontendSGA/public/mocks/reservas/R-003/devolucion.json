@@ -1,0 +1,6 @@
+{
+  "totalPagado": 0,
+  "retencion": 0,
+  "devolucion": 0,
+  "regla": "La reserva aún no tiene pagos: se cancela sin devolución ni penalidad."
+}

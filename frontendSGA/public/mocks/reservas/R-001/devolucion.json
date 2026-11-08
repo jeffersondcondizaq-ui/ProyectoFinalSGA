@@ -1,0 +1,6 @@
+{
+  "totalPagado": 144000,
+  "retencion": 144000,
+  "devolucion": 0,
+  "regla": "Faltan menos de 48 horas para la entrada: se retiene el 100 % de lo pagado."
+}

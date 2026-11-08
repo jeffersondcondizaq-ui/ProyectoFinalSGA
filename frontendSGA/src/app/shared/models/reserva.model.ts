@@ -30,6 +30,7 @@ export interface Reserva {
   fechaCreacion: string;
   ocupantes: Ocupante[];
   valorEstancia: number;
+  anticipo?: number;
   saldo: number;
   codigoExterno?: string;
   plataforma?: string;
@@ -56,4 +57,12 @@ export interface ConflictoCanal {
   fechaRegistro: string;
   codigoReservaExistente: string;
   descripcion: string;
+}
+
+export interface SimulacionCancelacion {
+  totalPagado: number;
+  retencion: number;
+  devolucion: number;
+  /** Regla de la política que se aplicó, en texto para mostrar. */
+  regla: string;
 }

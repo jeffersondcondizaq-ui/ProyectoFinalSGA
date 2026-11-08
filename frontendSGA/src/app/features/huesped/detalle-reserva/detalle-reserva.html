@@ -1,5 +1,167 @@
-<app-en-construccion
-  titulo="Detalle de la reserva"
-  descripcion="Folio con cargos y pagos, pago de anticipo o abonos y cancelación mostrando antes la devolución."
-  tarjeta="[FE] Huésped: mis reservas, folio y cancelación"
-/>
+<a matButton routerLink="/huesped/reservas" class="volver">
+  <mat-icon>arrow_back</mat-icon>
+  Mis reservas
+</a>
+
+@if (reserva(); as r) {
+  <div class="titulo">
+    <h1>Reserva {{ r.codigo }}</h1>
+    <app-estado-reserva [estado]="r.estado" />
+  </div>
+
+  <div class="columnas">
+    <!-- Datos de la estadía -->
+    <mat-card appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Estadía</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <dl class="datos">
+          <div>
+            <dt>Apartamento</dt>
+            <dd>{{ r.codigoApartamento }}</dd>
+          </div>
+          <div>
+            <dt>Entrada</dt>
+            <dd>{{ r.fechaEntrada }}</dd>
+          </div>
+          <div>
+            <dt>Salida</dt>
+            <dd>{{ r.fechaSalida }}</dd>
+          </div>
+          <div>
+            <dt>Valor de la estancia</dt>
+            <dd>{{ r.valorEstancia | cop }}</dd>
+          </div>
+          @if (r.anticipo) {
+            <div>
+              <dt>Anticipo (30 %)</dt>
+              <dd>{{ r.anticipo | cop }}</dd>
+            </div>
+          }
+          <div>
+            <dt>Titular</dt>
+            <dd>{{ r.nombreTitular }}</dd>
+          </div>
+        </dl>
+        <h3>Ocupantes</h3>
+        <ul>
+          @for (o of r.ocupantes; track $index) {
+            <li>{{ o.nombre }} <span class="secundario">· nació el {{ o.fechaNacimiento }}</span></li>
+          }
+        </ul>
+        @if (r.estado === 'PENDIENTE') {
+          <p class="aviso">
+            <mat-icon>schedule</mat-icon>
+            Paga el anticipo para confirmar. Si no se confirma en 24 horas, la reserva se cancela.
+          </p>
+        }
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Folio -->
+    <mat-card appearance="outlined">
+      <mat-card-header>
+        <mat-card-title>Folio</mat-card-title>
+        <mat-card-subtitle>Cargos y pagos de la reserva</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        @if (folio(); as f) {
+          <app-folio-movimientos [folio]="f" />
+        } @else {
+          <p>Cargando folio...</p>
+        }
+
+        <!-- Formulario de pago -->
+        @if (mostrarPago()) {
+          <form [formGroup]="pago" (ngSubmit)="pagar()" class="pago">
+            <h3>{{ debeAnticipo() ? 'Pagar anticipo' : 'Registrar abono' }}</h3>
+            <mat-form-field appearance="outline">
+              <mat-label>Medio de pago</mat-label>
+              <mat-select formControlName="medio">
+                @for (m of mediosPago; track m.valor) {
+                  <mat-option [value]="m.valor">{{ m.etiqueta }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Valor</mat-label>
+              <span matTextPrefix>$&nbsp;</span>
+              <input matInput type="number" min="1" formControlName="valor" />
+              @if (pago.controls.valor.hasError('required') || pago.controls.valor.hasError('min')) {
+                <mat-error>Escribe un valor mayor que cero</mat-error>
+              } @else if (pago.controls.valor.hasError('max')) {
+                <mat-error>No puede superar el saldo</mat-error>
+              }
+            </mat-form-field>
+            <div class="botones">
+              <button matButton type="button" (click)="mostrarPago.set(false)">Cancelar</button>
+              <button matButton="filled" type="submit" [disabled]="pagando()">
+                {{ pagando() ? 'Pagando...' : 'Pagar' }}
+              </button>
+            </div>
+          </form>
+        }
+      </mat-card-content>
+      @if (puedePagar() && !mostrarPago()) {
+        <mat-card-actions align="end">
+          <button matButton="filled" (click)="abrirPago()">
+            <mat-icon>payments</mat-icon>
+            {{ debeAnticipo() ? 'Pagar anticipo' : 'Abonar' }}
+          </button>
+        </mat-card-actions>
+      }
+    </mat-card>
+  </div>
+
+  <!-- Cancelación -->
+  @if (puedeCancelar()) {
+    <mat-card appearance="outlined" class="cancelacion">
+      <mat-card-content>
+        @if (simulacion(); as s) {
+          <h3>¿Cancelar la reserva {{ r.codigo }}?</h3>
+          <p>{{ s.regla }}</p>
+          <dl class="datos">
+            <div>
+              <dt>Has pagado</dt>
+              <dd>{{ s.totalPagado | cop }}</dd>
+            </div>
+            <div>
+              <dt>Se retiene</dt>
+              <dd>{{ s.retencion | cop }}</dd>
+            </div>
+            <div>
+              <dt>Se te devolvería</dt>
+              <dd class="devolucion">{{ s.devolucion | cop }}</dd>
+            </div>
+          </dl>
+          @if (usarMocks) {
+            <p class="secundario">Con mocks la reserva no cambia de estado después de cancelar.</p>
+          }
+          <div class="botones">
+            <button matButton (click)="simulacion.set(null)" [disabled]="cancelando()">
+              No, mantener
+            </button>
+            <button
+              matButton="filled"
+              class="peligro"
+              (click)="confirmarCancelacion()"
+              [disabled]="cancelando()"
+            >
+              {{ cancelando() ? 'Cancelando...' : 'Sí, cancelar reserva' }}
+            </button>
+          </div>
+        } @else {
+          <div class="fila-cancelar">
+            <span>¿Ya no vas a viajar? Antes de cancelar te mostramos cuánto se te devolvería.</span>
+            <button matButton="outlined" class="peligro-texto" (click)="pedirCancelacion()">
+              Cancelar reserva
+            </button>
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+} @else {
+  <p>Cargando reserva...</p>
+}

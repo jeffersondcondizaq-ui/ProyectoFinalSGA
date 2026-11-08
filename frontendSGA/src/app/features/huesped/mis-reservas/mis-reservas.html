@@ -1,5 +1,58 @@
-<app-en-construccion
-  titulo="Mis reservas"
-  descripcion="Reservas con estado y saldo; acceso al detalle de cada una."
-  tarjeta="[FE] Huésped: mis reservas, folio y cancelación"
-/>
+<div class="titulo">
+  <h1>Mis reservas</h1>
+  <a matButton="filled" routerLink="/huesped/disponibilidad">
+    <mat-icon>add</mat-icon>
+    Nueva reserva
+  </a>
+</div>
+
+@if (cargando()) {
+  <p>Cargando reservas...</p>
+} @else {
+  <h2>Activas</h2>
+  <div class="grid">
+    @for (r of activas(); track r.codigo) {
+      <ng-container [ngTemplateOutlet]="tarjeta" [ngTemplateOutletContext]="{ $implicit: r }" />
+    } @empty {
+      <p>No tienes reservas activas.</p>
+    }
+  </div>
+
+  @if (historial().length) {
+    <h2>Historial</h2>
+    <div class="grid">
+      @for (r of historial(); track r.codigo) {
+        <ng-container [ngTemplateOutlet]="tarjeta" [ngTemplateOutletContext]="{ $implicit: r }" />
+      }
+    </div>
+  }
+}
+
+<ng-template #tarjeta let-r>
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>{{ r.codigo }} · {{ r.codigoApartamento }}</mat-card-title>
+      <mat-card-subtitle>{{ r.fechaEntrada }} → {{ r.fechaSalida }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <app-estado-reserva [estado]="r.estado" />
+      <dl>
+        <div>
+          <dt>Valor</dt>
+          <dd>{{ r.valorEstancia | cop }}</dd>
+        </div>
+        <div>
+          <dt>Saldo</dt>
+          <dd [class.pendiente]="r.saldo > 0">{{ r.saldo | cop }}</dd>
+        </div>
+        <div>
+          <dt>Personas</dt>
+          <dd>{{ r.ocupantes.length }}</dd>
+        </div>
+      </dl>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <a matButton [routerLink]="['/huesped/reservas', r.codigo]">Ver detalle</a>
+    </mat-card-actions>
+  </mat-card>
+</ng-template>

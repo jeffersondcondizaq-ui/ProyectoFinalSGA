@@ -10,6 +10,7 @@ import {
   CrearReservaRequest,
   Reserva,
   ReservaExternaRequest,
+  SimulacionCancelacion,
 } from '../../shared/models';
 
 /** ReservaUseCase del backend: disponibilidad, cotización, canales y ciclo de vida. */
@@ -58,12 +59,13 @@ export class ReservaApi {
     return this.http.post<Reserva>(`${this.url}/reservas/${codigo}/confirmar`, {});
   }
 
-  simularCancelacion(codigo: string): Observable<{ devolucion: number }> {
-    return this.http.get<{ devolucion: number }>(`${this.url}/reservas/${codigo}/devolucion`);
+  /** Cuánto se devolvería si se cancela ahora (no cancela nada). */
+  simularCancelacion(codigo: string): Observable<SimulacionCancelacion> {
+    return this.http.get<SimulacionCancelacion>(`${this.url}/reservas/${codigo}/devolucion`);
   }
 
-  cancelar(codigo: string): Observable<{ devolucion: number }> {
-    return this.http.post<{ devolucion: number }>(`${this.url}/reservas/${codigo}/cancelar`, {});
+  cancelar(codigo: string): Observable<SimulacionCancelacion> {
+    return this.http.post<SimulacionCancelacion>(`${this.url}/reservas/${codigo}/cancelar`, {});
   }
 
   checkIn(codigo: string): Observable<Reserva> {

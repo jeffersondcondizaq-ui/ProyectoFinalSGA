@@ -1,0 +1,36 @@
+:host {
+  display: block;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.numero {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.medio {
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.correccion {
+  font-style: italic;
+}
+
+.mat-mdc-footer-cell {
+  font-weight: 600;
+}
+
+.saldo {
+  margin: 12px 0 0;
+  text-align: right;
+  font: var(--mat-sys-title-medium);
+
+  &.pendiente strong {
+    color: var(--mat-sys-error);
+  }
+}
