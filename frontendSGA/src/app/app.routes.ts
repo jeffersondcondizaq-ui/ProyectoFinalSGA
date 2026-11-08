@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { rolGuard } from './core/auth/auth.guard';
 import { Layout } from './layout/layout';
 
 export const routes: Routes = [
@@ -7,7 +8,35 @@ export const routes: Routes = [
     component: Layout,
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'inicio' },
-      { path: 'inicio', loadComponent: () => import('./pages/home/home').then((m) => m.Home) },
+      {
+        path: 'inicio',
+        loadComponent: () => import('./features/publico/inicio/inicio').then((m) => m.Inicio),
+      },
+      {
+        path: 'login',
+        loadComponent: () => import('./features/publico/login/login').then((m) => m.Login),
+      },
+      {
+        path: 'registro',
+        loadComponent: () => import('./features/publico/registro/registro').then((m) => m.Registro),
+      },
+      {
+        path: 'huesped',
+        canMatch: [rolGuard('HUESPED')],
+        loadChildren: () =>
+          import('./features/huesped/huesped.routes').then((m) => m.HUESPED_ROUTES),
+      },
+      {
+        path: 'recepcion',
+        canMatch: [rolGuard('RECEPCIONISTA')],
+        loadChildren: () =>
+          import('./features/recepcion/recepcion.routes').then((m) => m.RECEPCION_ROUTES),
+      },
+      {
+        path: 'admin',
+        canMatch: [rolGuard('ADMINISTRADOR')],
+        loadChildren: () => import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

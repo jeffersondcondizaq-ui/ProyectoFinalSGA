@@ -2,16 +2,31 @@
   <button matIconButton aria-label="Mostrar menú" (click)="opened.set(!opened())">
     <mat-icon>menu</mat-icon>
   </button>
-  <span>SGA</span>
+  <span>SGA · Aparta-Suites UQ</span>
+  <span class="espacio"></span>
+  @if (sesion.sesion(); as s) {
+    <span class="usuario">{{ s.nombre }} · {{ s.rol }}</span>
+    <button matIconButton aria-label="Cerrar sesión" (click)="cerrarSesion()">
+      <mat-icon>logout</mat-icon>
+    </button>
+  }
 </mat-toolbar>
 
 <mat-sidenav-container class="container">
   <mat-sidenav mode="side" [opened]="opened()">
     <mat-nav-list>
-      <a mat-list-item routerLink="/inicio" routerLinkActive #rla="routerLinkActive" [activated]="rla.isActive">
-        <mat-icon matListItemIcon>home</mat-icon>
-        <span matListItemTitle>Inicio</span>
-      </a>
+      @for (opcion of menu(); track opcion.ruta) {
+        <a
+          mat-list-item
+          [routerLink]="opcion.ruta"
+          routerLinkActive
+          #rla="routerLinkActive"
+          [activated]="rla.isActive"
+        >
+          <mat-icon matListItemIcon>{{ opcion.icono }}</mat-icon>
+          <span matListItemTitle>{{ opcion.etiqueta }}</span>
+        </a>
+      }
     </mat-nav-list>
   </mat-sidenav>
 

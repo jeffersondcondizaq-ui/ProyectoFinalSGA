@@ -1,0 +1,26 @@
+{
+  "codigoReserva": "R-001",
+  "movimientos": [
+    {
+      "id": "M-001",
+      "tipo": "CARGO",
+      "fecha": "2026-10-20T10:30:00",
+      "valor": 480000,
+      "descripcion": "Alojamiento 3 noches (temporada Baja, 2 pagadores)",
+      "esCorreccion": false,
+      "tipoCargo": "ALOJAMIENTO"
+    },
+    {
+      "id": "M-002",
+      "tipo": "PAGO",
+      "fecha": "2026-10-20T10:42:00",
+      "valor": 144000,
+      "descripcion": "Anticipo 30 %",
+      "esCorreccion": false,
+      "medio": "TARJETA"
+    }
+  ],
+  "totalCargos": 480000,
+  "totalPagos": 144000,
+  "saldo": 336000
+}

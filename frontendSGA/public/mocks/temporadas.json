@@ -1,0 +1,26 @@
+[
+  {
+    "tipo": "MEDIA",
+    "fechaInicio": "2026-11-14",
+    "fechaFin": "2026-11-17",
+    "descripcion": "Puente festivo de noviembre"
+  },
+  {
+    "tipo": "ALTA",
+    "fechaInicio": "2026-12-15",
+    "fechaFin": "2027-01-16",
+    "descripcion": "Vacaciones de diciembre y enero"
+  },
+  {
+    "tipo": "ALTA",
+    "fechaInicio": "2027-03-20",
+    "fechaFin": "2027-03-29",
+    "descripcion": "Semana Santa"
+  },
+  {
+    "tipo": "MEDIA",
+    "fechaInicio": "2027-06-12",
+    "fechaFin": "2027-06-16",
+    "descripcion": "Puente festivo de junio"
+  }
+]

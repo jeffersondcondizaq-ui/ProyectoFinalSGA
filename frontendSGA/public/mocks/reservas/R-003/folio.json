@@ -1,0 +1,17 @@
+{
+  "codigoReserva": "R-003",
+  "movimientos": [
+    {
+      "id": "M-008",
+      "tipo": "CARGO",
+      "fecha": "2026-11-08T08:15:00",
+      "valor": 1080000,
+      "descripcion": "Alojamiento 3 noches (temporada Media, 4 pagadores)",
+      "esCorreccion": false,
+      "tipoCargo": "ALOJAMIENTO"
+    }
+  ],
+  "totalCargos": 1080000,
+  "totalPagos": 0,
+  "saldo": 1080000
+}

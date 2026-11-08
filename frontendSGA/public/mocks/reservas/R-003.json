@@ -1,0 +1,31 @@
+{
+  "codigo": "R-003",
+  "canal": "PORTAL",
+  "estado": "PENDIENTE",
+  "documentoTitular": "1094123456",
+  "nombreTitular": "Laura Gómez Restrepo",
+  "codigoApartamento": "APT-201",
+  "fechaEntrada": "2026-11-14",
+  "fechaSalida": "2026-11-17",
+  "fechaCreacion": "2026-11-08T08:15:00",
+  "ocupantes": [
+    {
+      "nombre": "Laura Gómez Restrepo",
+      "fechaNacimiento": "1995-07-18"
+    },
+    {
+      "nombre": "Andrés Felipe Gómez",
+      "fechaNacimiento": "1993-02-05"
+    },
+    {
+      "nombre": "Camilo Restrepo",
+      "fechaNacimiento": "1996-08-30"
+    },
+    {
+      "nombre": "Natalia Pérez",
+      "fechaNacimiento": "1997-12-01"
+    }
+  ],
+  "valorEstancia": 1080000,
+  "saldo": 1080000
+}

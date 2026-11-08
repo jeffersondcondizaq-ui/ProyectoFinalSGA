@@ -1,0 +1,27 @@
+{
+  "codigo": "R-006",
+  "canal": "DIRECTA",
+  "estado": "CANCELADA",
+  "documentoTitular": "1094555666",
+  "nombreTitular": "Jorge Iván Londoño",
+  "codigoApartamento": "APT-201",
+  "fechaEntrada": "2026-11-20",
+  "fechaSalida": "2026-11-22",
+  "fechaCreacion": "2026-10-25T11:00:00",
+  "ocupantes": [
+    {
+      "nombre": "Jorge Iván Londoño",
+      "fechaNacimiento": "1979-06-08"
+    },
+    {
+      "nombre": "Gloria Londoño",
+      "fechaNacimiento": "1981-01-17"
+    },
+    {
+      "nombre": "Samuel Londoño",
+      "fechaNacimiento": "2012-09-09"
+    }
+  ],
+  "valorEstancia": 390000,
+  "saldo": 0
+}

@@ -1,0 +1,181 @@
+[
+  {
+    "codigo": "R-001",
+    "canal": "PORTAL",
+    "estado": "CONFIRMADA",
+    "documentoTitular": "1094123456",
+    "nombreTitular": "Laura Gómez Restrepo",
+    "codigoApartamento": "APT-101",
+    "fechaEntrada": "2026-11-08",
+    "fechaSalida": "2026-11-11",
+    "fechaCreacion": "2026-10-20T10:30:00",
+    "ocupantes": [
+      {
+        "nombre": "Laura Gómez Restrepo",
+        "fechaNacimiento": "1995-07-18"
+      },
+      {
+        "nombre": "Andrés Felipe Gómez",
+        "fechaNacimiento": "1993-02-05"
+      },
+      {
+        "nombre": "Sofía Gómez",
+        "fechaNacimiento": "2022-03-10"
+      }
+    ],
+    "valorEstancia": 480000,
+    "saldo": 336000
+  },
+  {
+    "codigo": "R-002",
+    "canal": "DIRECTA",
+    "estado": "EN_CURSO",
+    "documentoTitular": "1053998877",
+    "nombreTitular": "Carlos Ruiz Patiño",
+    "codigoApartamento": "APT-102",
+    "fechaEntrada": "2026-11-05",
+    "fechaSalida": "2026-11-08",
+    "fechaCreacion": "2026-11-02T16:00:00",
+    "ocupantes": [
+      {
+        "nombre": "Carlos Ruiz Patiño",
+        "fechaNacimiento": "1988-11-23"
+      },
+      {
+        "nombre": "Mónica Salazar",
+        "fechaNacimiento": "1990-05-14"
+      }
+    ],
+    "valorEstancia": 420000,
+    "saldo": 40000
+  },
+  {
+    "codigo": "R-003",
+    "canal": "PORTAL",
+    "estado": "PENDIENTE",
+    "documentoTitular": "1094123456",
+    "nombreTitular": "Laura Gómez Restrepo",
+    "codigoApartamento": "APT-201",
+    "fechaEntrada": "2026-11-14",
+    "fechaSalida": "2026-11-17",
+    "fechaCreacion": "2026-11-08T08:15:00",
+    "ocupantes": [
+      {
+        "nombre": "Laura Gómez Restrepo",
+        "fechaNacimiento": "1995-07-18"
+      },
+      {
+        "nombre": "Andrés Felipe Gómez",
+        "fechaNacimiento": "1993-02-05"
+      },
+      {
+        "nombre": "Camilo Restrepo",
+        "fechaNacimiento": "1996-08-30"
+      },
+      {
+        "nombre": "Natalia Pérez",
+        "fechaNacimiento": "1997-12-01"
+      }
+    ],
+    "valorEstancia": 1080000,
+    "saldo": 1080000
+  },
+  {
+    "codigo": "R-004",
+    "canal": "EXTERNA",
+    "estado": "CONFIRMADA",
+    "documentoTitular": "1010456789",
+    "nombreTitular": "Valentina Ríos Arango",
+    "codigoApartamento": "APT-102",
+    "fechaEntrada": "2026-11-09",
+    "fechaSalida": "2026-11-12",
+    "fechaCreacion": "2026-11-01T21:45:00",
+    "ocupantes": [
+      {
+        "nombre": "Valentina Ríos Arango",
+        "fechaNacimiento": "1999-04-02"
+      },
+      {
+        "nombre": "Tomás Herrera",
+        "fechaNacimiento": "1998-10-19"
+      }
+    ],
+    "valorEstancia": 420000,
+    "saldo": 0,
+    "codigoExterno": "BK-558201",
+    "plataforma": "Booking"
+  },
+  {
+    "codigo": "R-005",
+    "canal": "PORTAL",
+    "estado": "FINALIZADA",
+    "documentoTitular": "1094123456",
+    "nombreTitular": "Laura Gómez Restrepo",
+    "codigoApartamento": "APT-101",
+    "fechaEntrada": "2026-10-10",
+    "fechaSalida": "2026-10-12",
+    "fechaCreacion": "2026-09-28T19:20:00",
+    "ocupantes": [
+      {
+        "nombre": "Laura Gómez Restrepo",
+        "fechaNacimiento": "1995-07-18"
+      },
+      {
+        "nombre": "Andrés Felipe Gómez",
+        "fechaNacimiento": "1993-02-05"
+      }
+    ],
+    "valorEstancia": 320000,
+    "saldo": 0
+  },
+  {
+    "codigo": "R-006",
+    "canal": "DIRECTA",
+    "estado": "CANCELADA",
+    "documentoTitular": "1094555666",
+    "nombreTitular": "Jorge Iván Londoño",
+    "codigoApartamento": "APT-201",
+    "fechaEntrada": "2026-11-20",
+    "fechaSalida": "2026-11-22",
+    "fechaCreacion": "2026-10-25T11:00:00",
+    "ocupantes": [
+      {
+        "nombre": "Jorge Iván Londoño",
+        "fechaNacimiento": "1979-06-08"
+      },
+      {
+        "nombre": "Gloria Londoño",
+        "fechaNacimiento": "1981-01-17"
+      },
+      {
+        "nombre": "Samuel Londoño",
+        "fechaNacimiento": "2012-09-09"
+      }
+    ],
+    "valorEstancia": 390000,
+    "saldo": 0
+  },
+  {
+    "codigo": "R-007",
+    "canal": "PORTAL",
+    "estado": "NO_SHOW",
+    "documentoTitular": "1094777888",
+    "nombreTitular": "Mariana Castaño Vélez",
+    "codigoApartamento": "APT-101",
+    "fechaEntrada": "2026-11-01",
+    "fechaSalida": "2026-11-03",
+    "fechaCreacion": "2026-10-15T09:10:00",
+    "ocupantes": [
+      {
+        "nombre": "Mariana Castaño Vélez",
+        "fechaNacimiento": "2000-03-27"
+      },
+      {
+        "nombre": "Daniel Vélez",
+        "fechaNacimiento": "2000-11-11"
+      }
+    ],
+    "valorEstancia": 320000,
+    "saldo": 0
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "codigoApartamento": "APT-101",
+    "nombre": "Suite Cocora",
+    "nochesOcupadas": 12,
+    "porcentaje": 40
+  },
+  {
+    "codigoApartamento": "APT-102",
+    "nombre": "Loft Palma de Cera",
+    "nochesOcupadas": 18,
+    "porcentaje": 60
+  },
+  {
+    "codigoApartamento": "APT-201",
+    "nombre": "Casa del Valle",
+    "nochesOcupadas": 9,
+    "porcentaje": 30
+  },
+  {
+    "codigoApartamento": "APT-202",
+    "nombre": "Mirador del Quindío",
+    "nochesOcupadas": 0,
+    "porcentaje": 0
+  }
+]

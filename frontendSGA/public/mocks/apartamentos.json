@@ -1,0 +1,109 @@
+[
+  {
+    "codigo": "APT-101",
+    "nombre": "Suite Cocora",
+    "numDormitorios": 2,
+    "capacidadMaxima": 4,
+    "caracteristicas": [
+      "Balcón",
+      "Vista a las montañas",
+      "Chimenea"
+    ],
+    "estado": "PREPARADO",
+    "activo": true,
+    "tarifas": [
+      {
+        "tipoTemporada": "BAJA",
+        "valorPersonaNoche": 80000
+      },
+      {
+        "tipoTemporada": "MEDIA",
+        "valorPersonaNoche": 100000
+      },
+      {
+        "tipoTemporada": "ALTA",
+        "valorPersonaNoche": 130000
+      }
+    ]
+  },
+  {
+    "codigo": "APT-102",
+    "nombre": "Loft Palma de Cera",
+    "numDormitorios": 1,
+    "capacidadMaxima": 2,
+    "caracteristicas": [
+      "Jacuzzi",
+      "Vista al valle"
+    ],
+    "estado": "OCUPADO",
+    "activo": true,
+    "tarifas": [
+      {
+        "tipoTemporada": "BAJA",
+        "valorPersonaNoche": 70000
+      },
+      {
+        "tipoTemporada": "MEDIA",
+        "valorPersonaNoche": 90000
+      },
+      {
+        "tipoTemporada": "ALTA",
+        "valorPersonaNoche": 115000
+      }
+    ]
+  },
+  {
+    "codigo": "APT-201",
+    "nombre": "Casa del Valle",
+    "numDormitorios": 3,
+    "capacidadMaxima": 6,
+    "caracteristicas": [
+      "Balcón",
+      "Cocina amplia",
+      "Zona de BBQ"
+    ],
+    "estado": "PENDIENTE_PREPARACION",
+    "activo": true,
+    "tarifas": [
+      {
+        "tipoTemporada": "BAJA",
+        "valorPersonaNoche": 65000
+      },
+      {
+        "tipoTemporada": "MEDIA",
+        "valorPersonaNoche": 90000
+      },
+      {
+        "tipoTemporada": "ALTA",
+        "valorPersonaNoche": 120000
+      }
+    ]
+  },
+  {
+    "codigo": "APT-202",
+    "nombre": "Mirador del Quindío",
+    "numDormitorios": 2,
+    "capacidadMaxima": 3,
+    "caracteristicas": [
+      "Vista a las montañas",
+      "Terraza privada"
+    ],
+    "estado": "FUERA_DE_SERVICIO",
+    "motivoFueraServicio": "Daño en la tubería del baño principal",
+    "activo": true,
+    "tarifas": [
+      {
+        "tipoTemporada": "BAJA",
+        "valorPersonaNoche": 75000
+      },
+      {
+        "tipoTemporada": "MEDIA",
+        "valorPersonaNoche": 95000
+      },
+      {
+        "tipoTemporada": "ALTA",
+        "valorPersonaNoche": 125000
+      }
+    ]
+  }
+]

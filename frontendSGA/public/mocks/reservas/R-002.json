@@ -1,0 +1,23 @@
+{
+  "codigo": "R-002",
+  "canal": "DIRECTA",
+  "estado": "EN_CURSO",
+  "documentoTitular": "1053998877",
+  "nombreTitular": "Carlos Ruiz Patiño",
+  "codigoApartamento": "APT-102",
+  "fechaEntrada": "2026-11-05",
+  "fechaSalida": "2026-11-08",
+  "fechaCreacion": "2026-11-02T16:00:00",
+  "ocupantes": [
+    {
+      "nombre": "Carlos Ruiz Patiño",
+      "fechaNacimiento": "1988-11-23"
+    },
+    {
+      "nombre": "Mónica Salazar",
+      "fechaNacimiento": "1990-05-14"
+    }
+  ],
+  "valorEstancia": 420000,
+  "saldo": 40000
+}

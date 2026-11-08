@@ -1,15 +1,15 @@
 import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { HealthService } from '../../core/health.service';
+import { HealthApi } from '../../../core/api/health.api';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-inicio',
   imports: [MatCardModule, MatButtonModule],
-  templateUrl: './home.html',
+  templateUrl: './inicio.html',
 })
-export class Home {
-  private readonly health = inject(HealthService);
+export class Inicio {
+  private readonly health = inject(HealthApi);
 
   protected readonly status = signal<string>('Consultando...');
 

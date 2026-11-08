@@ -15,9 +15,17 @@
 }
 
 mat-sidenav {
-  width: 220px;
+  width: 260px;
 }
 
 .content {
   padding: 24px;
+}
+
+.espacio {
+  flex: 1;
+}
+
+.usuario {
+  font: var(--mat-sys-body-medium);
 }

@@ -1,0 +1,23 @@
+{
+  "codigo": "R-007",
+  "canal": "PORTAL",
+  "estado": "NO_SHOW",
+  "documentoTitular": "1094777888",
+  "nombreTitular": "Mariana Castaño Vélez",
+  "codigoApartamento": "APT-101",
+  "fechaEntrada": "2026-11-01",
+  "fechaSalida": "2026-11-03",
+  "fechaCreacion": "2026-10-15T09:10:00",
+  "ocupantes": [
+    {
+      "nombre": "Mariana Castaño Vélez",
+      "fechaNacimiento": "2000-03-27"
+    },
+    {
+      "nombre": "Daniel Vélez",
+      "fechaNacimiento": "2000-11-11"
+    }
+  ],
+  "valorEstancia": 320000,
+  "saldo": 0
+}

@@ -1,0 +1,12 @@
+<app-en-construccion
+  titulo="Iniciar sesión"
+  descripcion="Formulario de usuario y contraseña. Según el rol, redirige al menú del huésped, de recepción o del administrador."
+  tarjeta="[FE] Login, registro y guards por rol"
+/>
+
+<!-- TEMPORAL: acceso de prueba por rol mientras no existe el login real. -->
+<div class="demo">
+  <button matButton="outlined" (click)="entrarComo('HUESPED')">Entrar como huésped</button>
+  <button matButton="outlined" (click)="entrarComo('RECEPCIONISTA')">Entrar como recepcionista</button>
+  <button matButton="outlined" (click)="entrarComo('ADMINISTRADOR')">Entrar como administrador</button>
+</div>

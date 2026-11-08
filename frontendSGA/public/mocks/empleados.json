@@ -1,0 +1,35 @@
+[
+  {
+    "documento": "1094000001",
+    "nombre": "Diana Marcela Ospina",
+    "fechaNacimiento": "1985-04-12",
+    "telefono": "3104567890",
+    "correo": "diana.ospina@apartasuites.co",
+    "usuario": "admin",
+    "rol": "ADMINISTRADOR",
+    "fechaContratacion": "2022-02-01",
+    "activo": true
+  },
+  {
+    "documento": "1094000002",
+    "nombre": "Julián Andrés Mejía",
+    "fechaNacimiento": "1998-09-30",
+    "telefono": "3112223344",
+    "correo": "julian.mejia@apartasuites.co",
+    "usuario": "recepcion",
+    "rol": "RECEPCIONISTA",
+    "fechaContratacion": "2024-06-15",
+    "activo": true
+  },
+  {
+    "documento": "1094000003",
+    "nombre": "Paula Andrea Cárdenas",
+    "fechaNacimiento": "1996-01-22",
+    "telefono": "3159876543",
+    "correo": "paula.cardenas@apartasuites.co",
+    "usuario": "pcardenas",
+    "rol": "RECEPCIONISTA",
+    "fechaContratacion": "2023-03-01",
+    "activo": false
+  }
+]

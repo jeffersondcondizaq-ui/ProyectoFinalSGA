@@ -1,0 +1,53 @@
+{
+  "codigoReserva": "R-002",
+  "movimientos": [
+    {
+      "id": "M-003",
+      "tipo": "CARGO",
+      "fecha": "2026-11-02T16:00:00",
+      "valor": 420000,
+      "descripcion": "Alojamiento 3 noches (temporada Baja, 2 pagadores)",
+      "esCorreccion": false,
+      "tipoCargo": "ALOJAMIENTO"
+    },
+    {
+      "id": "M-004",
+      "tipo": "PAGO",
+      "fecha": "2026-11-05T15:20:00",
+      "valor": 420000,
+      "descripcion": "Pago al llegar",
+      "esCorreccion": false,
+      "medio": "EFECTIVO"
+    },
+    {
+      "id": "M-005",
+      "tipo": "CARGO",
+      "fecha": "2026-11-06T08:30:00",
+      "valor": 40000,
+      "descripcion": "Desayunos (2 días)",
+      "esCorreccion": false,
+      "tipoCargo": "SERVICIO_ADICIONAL"
+    },
+    {
+      "id": "M-006",
+      "tipo": "CARGO",
+      "fecha": "2026-11-06T18:00:00",
+      "valor": 25000,
+      "descripcion": "Lavandería",
+      "esCorreccion": false,
+      "tipoCargo": "SERVICIO_ADICIONAL"
+    },
+    {
+      "id": "M-007",
+      "tipo": "CARGO",
+      "fecha": "2026-11-06T18:10:00",
+      "valor": -25000,
+      "descripcion": "Corrección: lavandería cargada por error",
+      "esCorreccion": true,
+      "tipoCargo": "SERVICIO_ADICIONAL"
+    }
+  ],
+  "totalCargos": 460000,
+  "totalPagos": 420000,
+  "saldo": 40000
+}

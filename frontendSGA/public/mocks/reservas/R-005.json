@@ -1,0 +1,23 @@
+{
+  "codigo": "R-005",
+  "canal": "PORTAL",
+  "estado": "FINALIZADA",
+  "documentoTitular": "1094123456",
+  "nombreTitular": "Laura Gómez Restrepo",
+  "codigoApartamento": "APT-101",
+  "fechaEntrada": "2026-10-10",
+  "fechaSalida": "2026-10-12",
+  "fechaCreacion": "2026-09-28T19:20:00",
+  "ocupantes": [
+    {
+      "nombre": "Laura Gómez Restrepo",
+      "fechaNacimiento": "1995-07-18"
+    },
+    {
+      "nombre": "Andrés Felipe Gómez",
+      "fechaNacimiento": "1993-02-05"
+    }
+  ],
+  "valorEstancia": 320000,
+  "saldo": 0
+}

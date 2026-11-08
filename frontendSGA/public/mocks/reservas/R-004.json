@@ -1,0 +1,25 @@
+{
+  "codigo": "R-004",
+  "canal": "EXTERNA",
+  "estado": "CONFIRMADA",
+  "documentoTitular": "1010456789",
+  "nombreTitular": "Valentina Ríos Arango",
+  "codigoApartamento": "APT-102",
+  "fechaEntrada": "2026-11-09",
+  "fechaSalida": "2026-11-12",
+  "fechaCreacion": "2026-11-01T21:45:00",
+  "ocupantes": [
+    {
+      "nombre": "Valentina Ríos Arango",
+      "fechaNacimiento": "1999-04-02"
+    },
+    {
+      "nombre": "Tomás Herrera",
+      "fechaNacimiento": "1998-10-19"
+    }
+  ],
+  "valorEstancia": 420000,
+  "saldo": 0,
+  "codigoExterno": "BK-558201",
+  "plataforma": "Booking"
+}
