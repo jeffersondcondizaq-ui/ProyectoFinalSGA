@@ -1,0 +1,12 @@
+{
+  "codigoApartamento": "APT-101",
+  "fechaEntrada": "2026-11-13",
+  "fechaSalida": "2026-11-16",
+  "detalleNoches": [
+    { "fecha": "2026-11-13", "temporada": "BAJA", "tarifaPersona": 80000, "pagadores": 2, "subtotal": 160000 },
+    { "fecha": "2026-11-14", "temporada": "MEDIA", "tarifaPersona": 100000, "pagadores": 2, "subtotal": 200000 },
+    { "fecha": "2026-11-15", "temporada": "MEDIA", "tarifaPersona": 100000, "pagadores": 2, "subtotal": 200000 }
+  ],
+  "valorTotal": 560000,
+  "anticipo": 168000
+}

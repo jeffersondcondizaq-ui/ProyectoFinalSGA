@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { rolGuard } from './core/auth/auth.guard';
+import { rolGuard, sinSesionGuard } from './core/auth/auth.guard';
 import { Layout } from './layout/layout';
 
 export const routes: Routes = [
@@ -14,10 +14,12 @@ export const routes: Routes = [
       },
       {
         path: 'login',
+        canMatch: [sinSesionGuard],
         loadComponent: () => import('./features/publico/login/login').then((m) => m.Login),
       },
       {
         path: 'registro',
+        canMatch: [sinSesionGuard],
         loadComponent: () => import('./features/publico/registro/registro').then((m) => m.Registro),
       },
       {

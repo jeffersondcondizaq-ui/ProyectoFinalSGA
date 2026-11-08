@@ -1,0 +1,64 @@
+.busqueda form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 16px;
+
+  .personas {
+    width: 140px;
+  }
+
+  button {
+    margin-top: 8px;
+  }
+}
+
+.resultados {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+
+  // En pantallas anchas la cotización va a la derecha de la lista.
+  @media (min-width: 1100px) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  h2 {
+    margin: 0;
+    font: var(--mat-sys-title-medium);
+  }
+}
+
+.apartamento.elegido {
+  border-color: var(--mat-sys-primary);
+  border-width: 2px;
+}
+
+.cotizacion {
+  align-self: start;
+  position: sticky;
+  top: 16px;
+
+  app-desglose-cotizacion {
+    margin-top: 16px;
+  }
+}
+
+.nacimientos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 0 12px;
+}
+
+.aviso-mock {
+  margin: 8px 0 0;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-tertiary);
+}

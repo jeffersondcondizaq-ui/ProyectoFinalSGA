@@ -7,7 +7,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { SesionService } from '../core/auth/sesion.service';
 import { MENU_POR_ROL, MENU_PUBLICO } from './menu';
-import { MatProgressBarModule, MatProgressBar } from '@angular/material/progress-bar';
+import { MatProgressBar } from '@angular/material/progress-bar';
 import { CargaService } from '../core/http/carga.service';
 
 @Component({
@@ -21,8 +21,8 @@ import { CargaService } from '../core/http/carga.service';
     MatListModule,
     MatIconModule,
     MatButtonModule,
-    MatProgressBar
-],
+    MatProgressBar,
+  ],
   templateUrl: './layout.html',
   styleUrl: './layout.scss',
 })

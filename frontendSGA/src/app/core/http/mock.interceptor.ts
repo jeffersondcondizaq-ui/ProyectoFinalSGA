@@ -1,7 +1,12 @@
-import { HttpErrorResponse, HttpInterceptorFn, HttpParams, HttpResponse } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpInterceptorFn,
+  HttpParams,
+  HttpResponse,
+} from '@angular/common/http';
 import { catchError, delay, filter, map, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { LoginRequest, RegistroHuespedRequest } from '../../shared/models';
+import { LoginRequest, RegistroHuespedRequest, CotizarRequest } from '../../shared/models';
 
 /**
  * Mientras no hay backend, responde con los JSON de public/mocks:
@@ -33,7 +38,7 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
     );
   }
 
-    if (req.method === 'POST' && ruta === '/auth/registro') {
+  if (req.method === 'POST' && ruta === '/auth/registro') {
     const { contrasena, ...huesped } = req.body as RegistroHuespedRequest;
     if (USUARIOS_MOCK.includes(huesped.usuario.toLowerCase())) {
       return throwError(
@@ -44,7 +49,20 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
     return of(new HttpResponse({ status: 201, body: huesped })).pipe(delay(500));
   }
 
-    if (req.method === 'PUT') {
+  if (req.method === 'POST' && ruta === '/cotizaciones') {
+    // Ejemplo fijo por apartamento: el cálculo real (temporadas, menores de 6) lo hace el backend.
+    const { codigoApartamento } = req.body as CotizarRequest;
+    return next(
+      req.clone({
+        method: 'GET',
+        url: `/mocks/cotizaciones/${codigoApartamento}.json`,
+        body: null,
+      }),
+    );
+  }
+
+  if (req.method === 'PUT') {
+    // Lee el JSON actual y le mezcla lo que se envió, como si el backend lo hubiera guardado.
     return next(req.clone({ method: 'GET', url: `/mocks${ruta}.json`, body: null })).pipe(
       filter((evento) => evento instanceof HttpResponse),
       map((res) => res.clone({ body: { ...(res.body as object), ...(req.body as object) } })),

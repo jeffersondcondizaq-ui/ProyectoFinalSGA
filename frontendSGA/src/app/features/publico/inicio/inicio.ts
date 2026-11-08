@@ -16,13 +16,7 @@ import { HealthApi } from '../../../core/api/health.api';
 import { SesionService } from '../../../core/auth/sesion.service';
 import { Apartamento } from '../../../shared/models';
 import { CopPipe } from '../../../shared/pipes/cop.pipe';
-
-/** Convierte una fecha del datepicker a 'YYYY-MM-DD' (formato de LocalDate en el backend). */
-function aFechaIso(fecha: Date): string {
-  const mm = String(fecha.getMonth() + 1).padStart(2, '0');
-  const dd = String(fecha.getDate()).padStart(2, '0');
-  return `${fecha.getFullYear()}-${mm}-${dd}`;
-}
+import { aFechaIso } from '../../../shared/utils/fechas';
 
 @Component({
   selector: 'app-inicio',

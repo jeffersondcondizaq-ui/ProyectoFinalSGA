@@ -19,13 +19,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 import { AutenticacionApi } from '../../../core/api/autenticacion.api';
-
-/** Convierte una fecha del datepicker a 'YYYY-MM-DD' (LocalDate en el backend). */
-function aFechaIso(fecha: Date): string {
-  const mm = String(fecha.getMonth() + 1).padStart(2, '0');
-  const dd = String(fecha.getDate()).padStart(2, '0');
-  return `${fecha.getFullYear()}-${mm}-${dd}`;
-}
+import { aFechaIso } from '../../../shared/utils/fechas';
 
 /** Valida que 'contrasena' y 'confirmacion' sean iguales (se pone en el FormGroup). */
 const contrasenasIguales: ValidatorFn = (grupo: AbstractControl): ValidationErrors | null => {
@@ -108,11 +102,17 @@ export class Registro {
     }
     this.enviando.set(true);
     this.auth
-      .registrarHuesped({ ...datos, nombre: datos.nombre.trim(), fechaNacimiento: aFechaIso(fechaNacimiento) })
+      .registrarHuesped({
+        ...datos,
+        nombre: datos.nombre.trim(),
+        fechaNacimiento: aFechaIso(fechaNacimiento),
+      })
       .pipe(finalize(() => this.enviando.set(false)))
       .subscribe({
         next: () => {
-          this.snackBar.open('Cuenta creada. Ya puedes iniciar sesión.', 'Cerrar', { duration: 5000 });
+          this.snackBar.open('Cuenta creada. Ya puedes iniciar sesión.', 'Cerrar', {
+            duration: 5000,
+          });
           this.router.navigate(['/login']);
         },
         // El mensaje de error (p. ej. usuario repetido) lo muestra el errorInterceptor.

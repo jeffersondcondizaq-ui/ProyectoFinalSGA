@@ -1,5 +1,125 @@
-<app-en-construccion
-  titulo="Buscar apartamentos"
-  descripcion="Rango de fechas y número de personas; lista de apartamentos disponibles y cotización noche por noche."
-  tarjeta="[FE] Huésped: buscar disponibilidad y cotizar"
-/>
+<h1>Buscar apartamentos</h1>
+
+<mat-card appearance="outlined" class="busqueda">
+  <mat-card-content>
+    <form [formGroup]="busqueda" (ngSubmit)="buscar()">
+      <mat-form-field appearance="outline">
+        <mat-label>Entrada y salida</mat-label>
+        <mat-date-range-input [rangePicker]="rango" [min]="hoy">
+          <input matStartDate formControlName="entrada" placeholder="Entrada" />
+          <input matEndDate formControlName="salida" placeholder="Salida" />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="rango" />
+        <mat-date-range-picker #rango />
+        @if (busqueda.controls.salida.hasError('minimoUnaNoche')) {
+          <mat-error>La salida debe ser al menos un día después de la entrada</mat-error>
+        } @else if (busqueda.controls.entrada.touched && busqueda.controls.entrada.invalid) {
+          <mat-error>Elige las fechas de entrada y salida</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="personas">
+        <mat-label>Personas</mat-label>
+        <input matInput type="number" min="1" formControlName="personas" />
+        <mat-hint>Incluye a los niños</mat-hint>
+      </mat-form-field>
+
+      <button matButton="filled" type="submit" [disabled]="consultando()">
+        <mat-icon>search</mat-icon>
+        Buscar
+      </button>
+    </form>
+  </mat-card-content>
+</mat-card>
+
+<div class="resultados">
+  <section class="lista">
+    @if (consultando()) {
+      <p>Buscando apartamentos disponibles...</p>
+    } @else if (disponibles(); as lista) {
+      <h2>{{ lista.length }} apartamento(s) disponible(s)</h2>
+      @for (apto of lista; track apto.codigo) {
+        <mat-card
+          appearance="outlined"
+          class="apartamento"
+          [class.elegido]="seleccionado()?.codigo === apto.codigo"
+        >
+          <mat-card-header>
+            <mat-card-title>{{ apto.nombre }}</mat-card-title>
+            <mat-card-subtitle>
+              {{ apto.codigo }} · {{ apto.numDormitorios }} dormitorios · hasta
+              {{ apto.capacidadMaxima }} personas
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-chip-set>
+              @for (c of apto.caracteristicas; track c) {
+                <mat-chip>{{ c }}</mat-chip>
+              }
+            </mat-chip-set>
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <button matButton="outlined" (click)="elegir(apto)">
+              <mat-icon>request_quote</mat-icon>
+              Cotizar
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      } @empty {
+        <p>No hay apartamentos disponibles para esas fechas y ese número de personas.</p>
+      }
+    } @else {
+      <p>Elige las fechas y el número de personas para ver los apartamentos disponibles.</p>
+    }
+  </section>
+
+  @if (seleccionado(); as apto) {
+    <aside class="cotizacion">
+      <mat-card appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>Cotización · {{ apto.nombre }}</mat-card-title>
+          <mat-card-subtitle>
+            {{ criterios()?.entrada }} → {{ criterios()?.salida }}
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <p>Fecha de nacimiento de cada persona (los menores de 6 años no pagan):</p>
+          <div class="nacimientos">
+            @for (control of nacimientos.controls; track $index) {
+              <mat-form-field appearance="outline">
+                <mat-label>Persona {{ $index + 1 }}</mat-label>
+                <input matInput [matDatepicker]="picker" [max]="hoy" [formControl]="control" />
+                <mat-datepicker-toggle matIconSuffix [for]="picker" />
+                <mat-datepicker #picker startView="multi-year" />
+                @if (control.hasError('required')) {
+                  <mat-error>Requerida</mat-error>
+                }
+              </mat-form-field>
+            }
+          </div>
+
+          <button matButton="filled" (click)="cotizar()" [disabled]="cotizando()">
+            {{ cotizando() ? 'Calculando...' : 'Calcular valor' }}
+          </button>
+
+          @if (cotizacion(); as cot) {
+            <app-desglose-cotizacion [cotizacion]="cot" />
+            @if (usarMocks) {
+              <p class="aviso-mock">
+                Con mocks la cotización es un ejemplo fijo (13 al 16 de noviembre, 3 personas).
+              </p>
+            }
+          }
+        </mat-card-content>
+        @if (cotizacion()) {
+          <mat-card-actions align="end">
+            <button matButton="filled" (click)="reservar()">
+              <mat-icon>event_available</mat-icon>
+              Reservar este apartamento
+            </button>
+          </mat-card-actions>
+        }
+      </mat-card>
+    </aside>
+  }
+</div>

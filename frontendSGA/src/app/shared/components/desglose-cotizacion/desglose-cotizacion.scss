@@ -1,0 +1,43 @@
+:host {
+  display: block;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.numero {
+  text-align: right;
+}
+
+.mat-mdc-footer-cell {
+  font-weight: 600;
+}
+
+.temporada {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font: var(--mat-sys-label-small);
+  background: var(--mat-sys-surface-container-high);
+
+  &.MEDIA {
+    background: var(--mat-sys-secondary-container);
+    color: var(--mat-sys-on-secondary-container);
+  }
+
+  &.ALTA {
+    background: var(--mat-sys-tertiary-container);
+    color: var(--mat-sys-on-tertiary-container);
+  }
+}
+
+.anticipo {
+  margin: 16px 0 4px;
+}
+
+.nota {
+  margin: 0;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
