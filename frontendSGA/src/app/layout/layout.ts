@@ -7,6 +7,8 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { SesionService } from '../core/auth/sesion.service';
 import { MENU_POR_ROL, MENU_PUBLICO } from './menu';
+import { MatProgressBarModule, MatProgressBar } from '@angular/material/progress-bar';
+import { CargaService } from '../core/http/carga.service';
 
 @Component({
   selector: 'app-layout',
@@ -19,7 +21,8 @@ import { MENU_POR_ROL, MENU_PUBLICO } from './menu';
     MatListModule,
     MatIconModule,
     MatButtonModule,
-  ],
+    MatProgressBar
+],
   templateUrl: './layout.html',
   styleUrl: './layout.scss',
 })
@@ -37,4 +40,6 @@ export class Layout {
     this.sesion.cerrar();
     this.router.navigate(['/inicio']);
   }
+
+  protected readonly carga = inject(CargaService);
 }

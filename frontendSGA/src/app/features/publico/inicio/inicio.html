@@ -1,11 +1,91 @@
-<mat-card appearance="outlined">
-  <mat-card-header>
-    <mat-card-title>Estado del backend</mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
-    <p>GET /api/health: <strong>{{ status() }}</strong></p>
-  </mat-card-content>
-  <mat-card-actions>
-    <button matButton (click)="refresh()">Reintentar</button>
-  </mat-card-actions>
-</mat-card>
+<!-- 1. Presentación del alojamiento -->
+<section class="hero">
+  <div class="hero-texto">
+    <h1>Aparta-Suites UQ</h1>
+    <p class="ubicacion"><mat-icon>location_on</mat-icon> Salento, Quindío</p>
+    <p>
+      Apartamentos completos con cocina, baño y zona social, en exclusiva para tu grupo. Reserva en
+      línea y paga un anticipo del 30 % para confirmar.
+    </p>
+    @if (!sesion.autenticado()) {
+      <div class="acciones">
+        <a matButton="filled" routerLink="/login">Iniciar sesión</a>
+        <a matButton="outlined" routerLink="/registro">Crear cuenta</a>
+      </div>
+    }
+  </div>
+
+  <!-- 2. Búsqueda rápida -->
+  <mat-card class="busqueda" appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>¿Cuándo nos visitas?</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="busqueda" (ngSubmit)="buscar()">
+        <mat-form-field appearance="outline">
+          <mat-label>Entrada y salida</mat-label>
+          <mat-date-range-input [rangePicker]="rango" [min]="hoy">
+            <input matStartDate formControlName="entrada" placeholder="Entrada" />
+            <input matEndDate formControlName="salida" placeholder="Salida" />
+          </mat-date-range-input>
+          <mat-datepicker-toggle matIconSuffix [for]="rango" />
+          <mat-date-range-picker #rango />
+          @if (busqueda.controls.salida.hasError('minimoUnaNoche')) {
+            <mat-error>La salida debe ser al menos un día después de la entrada</mat-error>
+          } @else if (busqueda.controls.entrada.touched && busqueda.controls.entrada.invalid) {
+            <mat-error>Elige las fechas de entrada y salida</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Personas</mat-label>
+          <input matInput type="number" min="1" [max]="capacidadMaxima()" formControlName="personas" />
+          <mat-hint>Incluye a los niños: todos ocupan cupo</mat-hint>
+        </mat-form-field>
+
+        <button matButton="filled" type="submit">
+          <mat-icon>search</mat-icon>
+          Buscar disponibilidad
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</section>
+
+<!-- 3. Apartamentos destacados -->
+<section>
+  <h2>Nuestros apartamentos</h2>
+  <div class="grid">
+    @for (apto of apartamentos(); track apto.codigo) {
+      <mat-card appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>{{ apto.nombre }}</mat-card-title>
+          <mat-card-subtitle>
+            {{ apto.numDormitorios }} dormitorios · hasta {{ apto.capacidadMaxima }} personas
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-chip-set>
+            @for (c of apto.caracteristicas; track c) {
+              <mat-chip>{{ c }}</mat-chip>
+            }
+          </mat-chip-set>
+          <p class="precio">
+            Desde <strong>{{ tarifaDesde(apto) | cop }}</strong> por persona / noche
+          </p>
+        </mat-card-content>
+      </mat-card>
+    } @empty {
+      <p>No hay apartamentos para mostrar.</p>
+    }
+  </div>
+</section>
+
+<!-- 4. Estado del backend (desarrollo) -->
+<section class="estado">
+  <mat-icon>dns</mat-icon>
+  <span>
+    Backend: <strong>{{ estadoBackend() }}</strong>
+  </span>
+  <button matButton (click)="consultarBackend()">Reintentar</button>
+</section>

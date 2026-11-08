@@ -1,0 +1,65 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1100px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr minmax(300px, 380px);
+  gap: 24px;
+  align-items: start;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hero-texto h1 {
+  font: var(--mat-sys-display-small);
+  margin: 0 0 8px;
+}
+
+.ubicacion {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.acciones {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.busqueda form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+h2 {
+  font: var(--mat-sys-title-large);
+  margin: 0 0 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.precio {
+  margin: 16px 0 0;
+}
+
+.estado {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}

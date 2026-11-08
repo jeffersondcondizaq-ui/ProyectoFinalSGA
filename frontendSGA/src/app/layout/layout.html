@@ -12,6 +12,12 @@
   }
 </mat-toolbar>
 
+<div class="barra-carga">
+  @if (carga.cargando()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>
+
 <mat-sidenav-container class="container">
   <mat-sidenav mode="side" [opened]="opened()">
     <mat-nav-list>

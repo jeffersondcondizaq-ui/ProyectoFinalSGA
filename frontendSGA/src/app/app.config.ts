@@ -5,11 +5,12 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/http/auth.interceptor';
 import { errorInterceptor } from './core/http/error.interceptor';
 import { mockInterceptor } from './core/http/mock.interceptor';
+import { cargaInterceptor } from './core/http/carga.interceptos';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withComponentInputBinding()),
-    provideHttpClient(withFetch(), withInterceptors([mockInterceptor, authInterceptor, errorInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([cargaInterceptor, mockInterceptor, authInterceptor, errorInterceptor])),
   ],
 };
