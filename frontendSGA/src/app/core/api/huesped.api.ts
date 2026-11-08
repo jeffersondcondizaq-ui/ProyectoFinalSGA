@@ -14,8 +14,8 @@ export class HuespedApi {
     return this.http.get<Huesped>(`${this.url}/yo`);
   }
 
-  actualizarPerfil(telefono: string, correo: string): Observable<Huesped> {
-    return this.http.put<Huesped>(`${this.url}/yo`, { telefono, correo });
+  actualizarPerfil(datos: Pick<Huesped, 'telefono' | 'correo' | 'foto'>): Observable<Huesped> {
+    return this.http.put<Huesped>(`${this.url}/yo`, datos);
   }
 
   buscar(documento: string): Observable<Huesped> {

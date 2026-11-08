@@ -1,5 +1,97 @@
-<app-en-construccion
-  titulo="Mi perfil"
-  descripcion="Ver y editar teléfono y correo; mostrar la edad calculada; foto opcional."
-  tarjeta="[FE] Huésped: perfil"
-/>
+<h1>Mi perfil</h1>
+
+@if (perfil(); as p) {
+  <mat-card appearance="outlined" class="tarjeta">
+    <mat-card-content>
+      <div class="encabezado">
+        <div class="foto">
+          @if (fotoMostrada(); as foto) {
+            <img [src]="foto" alt="Foto de perfil" />
+          } @else {
+            <mat-icon>account_circle</mat-icon>
+          }
+        </div>
+        <div>
+          <h2>{{ p.nombre }}</h2>
+          <p class="usuario">&#64;{{ p.usuario }}</p>
+        </div>
+      </div>
+
+      @if (editando()) {
+        <div class="acciones-foto">
+          <button matButton="outlined" type="button" (click)="selectorFoto.click()">
+            <mat-icon>photo_camera</mat-icon>
+            {{ fotoNueva() ? 'Cambiar foto' : 'Agregar foto' }}
+          </button>
+          @if (fotoNueva()) {
+            <button matButton type="button" (click)="quitarFoto()">Quitar foto</button>
+          }
+          <input #selectorFoto type="file" accept="image/*" hidden (change)="elegirFoto($event)" />
+        </div>
+      }
+
+      <dl class="datos">
+        <div>
+          <dt>Documento</dt>
+          <dd>{{ p.documento }}</dd>
+        </div>
+        <div>
+          <dt>Fecha de nacimiento</dt>
+          <dd>{{ fechaNacimiento() }} ({{ p.edad }} años)</dd>
+        </div>
+        @if (!editando()) {
+          <div>
+            <dt>Teléfono</dt>
+            <dd>{{ p.telefono }}</dd>
+          </div>
+          <div>
+            <dt>Correo</dt>
+            <dd>{{ p.correo }}</dd>
+          </div>
+        }
+      </dl>
+
+      @if (editando()) {
+        <form [formGroup]="form" (ngSubmit)="guardar()" class="formulario">
+          <mat-form-field appearance="outline">
+            <mat-label>Teléfono</mat-label>
+            <input matInput formControlName="telefono" inputmode="tel" />
+            @if (form.controls.telefono.hasError('required')) {
+              <mat-error>Escribe tu teléfono</mat-error>
+            } @else if (form.controls.telefono.hasError('pattern')) {
+              <mat-error>Debe tener 10 dígitos</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Correo</mat-label>
+            <input matInput type="email" formControlName="correo" />
+            @if (form.controls.correo.hasError('required')) {
+              <mat-error>Escribe tu correo</mat-error>
+            } @else if (form.controls.correo.hasError('email')) {
+              <mat-error>Correo no válido</mat-error>
+            }
+          </mat-form-field>
+
+          <div class="botones">
+            <button matButton type="button" (click)="cancelar()" [disabled]="guardando()">
+              Cancelar
+            </button>
+            <button matButton="filled" type="submit" [disabled]="guardando()">
+              {{ guardando() ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+        </form>
+      } @else {
+        <div class="botones">
+          <button matButton="filled" (click)="editar()">
+            <mat-icon>edit</mat-icon>
+            Editar
+          </button>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <p>Cargando perfil...</p>
+}

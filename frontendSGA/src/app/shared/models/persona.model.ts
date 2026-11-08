@@ -12,13 +12,14 @@ export interface Huesped {
   documento: string;
   nombre: string;
   fechaNacimiento: Fecha;
+  edad: number;
   telefono: string;
   correo: string;
   usuario: string;
   foto?: string;
 }
 
-export interface RegistroHuespedRequest extends Huesped {
+export interface RegistroHuespedRequest extends Omit<Huesped, 'edad'> {
   contrasena: string;
 }
 

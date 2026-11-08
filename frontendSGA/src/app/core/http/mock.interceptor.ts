@@ -1,5 +1,5 @@
 import { HttpErrorResponse, HttpInterceptorFn, HttpParams, HttpResponse } from '@angular/common/http';
-import { catchError, delay, of, throwError } from 'rxjs';
+import { catchError, delay, filter, map, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { LoginRequest, RegistroHuespedRequest } from '../../shared/models';
 
@@ -42,6 +42,13 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
     }
     // No se guarda en ningún lado: solo responde como si el backend lo hubiera creado.
     return of(new HttpResponse({ status: 201, body: huesped })).pipe(delay(500));
+  }
+
+    if (req.method === 'PUT') {
+    return next(req.clone({ method: 'GET', url: `/mocks${ruta}.json`, body: null })).pipe(
+      filter((evento) => evento instanceof HttpResponse),
+      map((res) => res.clone({ body: { ...(res.body as object), ...(req.body as object) } })),
+    );
   }
 
   if (req.method !== 'GET') {
