@@ -1,9 +1,11 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { SesionService } from '../auth/sesion.service';
+
+export const SIN_AVISO_ERROR = new HttpContextToken<boolean>(() => false);
 
 /**
  * Muestra los errores del API en un snackbar.
@@ -23,7 +25,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       const mensaje =
         error.error?.mensaje ??
         (error.status === 0 ? 'No hay conexión con el servidor' : 'Ocurrió un error inesperado');
-      snackBar.open(mensaje, 'Cerrar', { duration: 5000 });
+      if (!req.context.get(SIN_AVISO_ERROR)) {
+        snackBar.open(mensaje, 'Cerrar', { duration: 5000 });
+      }
       return throwError(() => error);
     }),
   );

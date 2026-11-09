@@ -1,0 +1,17 @@
+{
+  "codigo": "R-008",
+  "canal": "DIRECTA",
+  "estado": "PENDIENTE",
+  "documentoTitular": "1053998877",
+  "nombreTitular": "Carlos Ruiz Patiño",
+  "codigoApartamento": "APT-201",
+  "fechaEntrada": "2026-11-20",
+  "fechaSalida": "2026-11-22",
+  "fechaCreacion": "2026-11-08T15:30:00",
+  "ocupantes": [
+    { "nombre": "Carlos Ruiz Patiño", "fechaNacimiento": "1988-11-23" },
+    { "nombre": "Mónica Salazar", "fechaNacimiento": "1990-05-14" }
+  ],
+  "valorEstancia": 260000,
+  "saldo": 260000
+}

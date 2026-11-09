@@ -1,5 +1,36 @@
-<app-en-construccion
-  titulo="Conflictos de canal"
-  descripcion="Reservas externas rechazadas y la reserva con la que chocaron."
-  tarjeta="[FE] Recepción: reservas Directa y Externa"
-/>
+<h1>Conflictos de canal</h1>
+<p class="intro">
+  Reservas externas que chocaron con una reserva vigente. Se rechazan y quedan aquí; la reserva
+  existente nunca se reemplaza.
+</p>
+
+@if (conflictos(); as lista) {
+  @if (lista.length) {
+    <mat-card appearance="outlined">
+      <table mat-table [dataSource]="lista">
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef>Recibida</th>
+          <td mat-cell *matCellDef="let c">{{ fecha(c.fechaRegistro) }}</td>
+        </ng-container>
+        <ng-container matColumnDef="codigoExterno">
+          <th mat-header-cell *matHeaderCellDef>Código externo</th>
+          <td mat-cell *matCellDef="let c">{{ c.codigoExterno }}</td>
+        </ng-container>
+        <ng-container matColumnDef="reserva">
+          <th mat-header-cell *matHeaderCellDef>Choca con</th>
+          <td mat-cell *matCellDef="let c">{{ c.codigoReservaExistente }}</td>
+        </ng-container>
+        <ng-container matColumnDef="descripcion">
+          <th mat-header-cell *matHeaderCellDef>Detalle</th>
+          <td mat-cell *matCellDef="let c">{{ c.descripcion }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+      </table>
+    </mat-card>
+  } @else {
+    <p>No hay conflictos de canal registrados.</p>
+  }
+} @else {
+  <p>Cargando conflictos...</p>
+}

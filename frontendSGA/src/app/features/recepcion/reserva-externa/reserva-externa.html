@@ -1,5 +1,117 @@
-<app-en-construccion
-  titulo="Reserva externa"
-  descripcion="Registrar una reserva de plataforma con su código externo."
-  tarjeta="[FE] Recepción: reservas Directa y Externa"
-/>
+<h1>Reserva externa</h1>
+<p class="intro">
+  Reservas que llegan de una plataforma (simulada) con su propio código. El alojamiento le paga
+  a la plataforma una comisión del 15 % sobre la estancia.
+</p>
+
+@if (creada(); as r) {
+  <mat-card appearance="outlined" class="resultado">
+    <mat-card-header>
+      <mat-icon matCardAvatar>check_circle</mat-icon>
+      <mat-card-title>Reserva {{ r.codigo }} registrada</mat-card-title>
+      <mat-card-subtitle>{{ r.plataforma }} · {{ r.codigoExterno }}</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <app-estado-reserva [estado]="r.estado" />
+      <p>
+        {{ r.codigoApartamento }} · {{ r.fechaEntrada }} → {{ r.fechaSalida }} ·
+        {{ r.ocupantes.length }} personas · {{ r.valorEstancia | cop }}
+      </p>
+    </mat-card-content>
+    <mat-card-actions align="end">
+      <button matButton="filled" (click)="nueva()">Recibir otra</button>
+    </mat-card-actions>
+  </mat-card>
+} @else {
+  <mat-card appearance="outlined">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="recibir()">
+        <h3>Datos de la plataforma</h3>
+        <div class="fila">
+          <mat-form-field appearance="outline">
+            <mat-label>Plataforma</mat-label>
+            <mat-select formControlName="plataforma">
+              @for (p of plataformas; track p) {
+                <mat-option [value]="p">{{ p }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Código externo</mat-label>
+            <input matInput formControlName="codigoExterno" placeholder="BK-123456" />
+            @if (form.controls.codigoExterno.hasError('required')) {
+              <mat-error>Escribe el código de la plataforma</mat-error>
+            } @else if (form.controls.codigoExterno.hasError('pattern')) {
+              <mat-error>Entre 4 y 20 letras, números o guiones</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <h3>Estadía</h3>
+        <div class="fila">
+          <mat-form-field appearance="outline">
+            <mat-label>Apartamento</mat-label>
+            <mat-select formControlName="codigoApartamento">
+              @for (a of apartamentos(); track a.codigo) {
+                <mat-option [value]="a.codigo">{{ a.codigo }} · {{ a.nombre }}</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.codigoApartamento.hasError('required')) {
+              <mat-error>Elige el apartamento</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Entrada y salida</mat-label>
+            <mat-date-range-input [rangePicker]="rango" [min]="hoy">
+              <input matStartDate formControlName="entrada" placeholder="Entrada" />
+              <input matEndDate formControlName="salida" placeholder="Salida" />
+            </mat-date-range-input>
+            <mat-datepicker-toggle matIconSuffix [for]="rango" />
+            <mat-date-range-picker #rango />
+            @if (form.controls.salida.hasError('minimoUnaNoche')) {
+              <mat-error>La salida debe ser al menos un día después</mat-error>
+            } @else if (form.controls.entrada.touched && form.controls.entrada.invalid) {
+              <mat-error>Elige las fechas</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <h3>Titular y ocupantes</h3>
+        <mat-form-field appearance="outline">
+          <mat-label>Documento del titular</mat-label>
+          <input matInput formControlName="documentoTitular" inputmode="numeric" />
+          <mat-hint>El titular es el ocupante 1</mat-hint>
+          @if (form.controls.documentoTitular.hasError('required')) {
+            <mat-error>Escribe el documento</mat-error>
+          } @else if (form.controls.documentoTitular.hasError('pattern')) {
+            <mat-error>Solo números, entre 6 y 10 dígitos</mat-error>
+          }
+        </mat-form-field>
+        <app-ocupantes-form [ocupantes]="ocupantes" [editable]="true" />
+
+        @if (usarMocks) {
+          <p class="secundario">
+            Mocks: el código BK-558201 ya existe y APT-101 genera un conflicto de canal.
+          </p>
+        }
+
+        <div class="botones">
+          <button matButton="filled" type="submit" [disabled]="enviando()">
+            {{ enviando() ? 'Enviando...' : 'Recibir reserva' }}
+          </button>
+        </div>
+      </form>
+
+      @if (conflicto()) {
+        <div class="conflicto">
+          <mat-icon>sync_problem</mat-icon>
+          <span>
+            La reserva fue rechazada y quedó registrada como conflicto de canal. La reserva
+            existente no se modifica.
+          </span>
+          <a matButton routerLink="/recepcion/conflictos">Ver conflictos</a>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+}

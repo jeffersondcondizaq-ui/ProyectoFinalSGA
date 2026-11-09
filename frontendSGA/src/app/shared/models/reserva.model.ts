@@ -48,6 +48,7 @@ export interface CrearReservaRequest extends CotizarRequest {
 }
 
 export interface ReservaExternaRequest extends CrearReservaRequest {
+  documentoTitular: string;
   codigoExterno: string;
   plataforma: string;
 }

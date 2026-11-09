@@ -1,0 +1,53 @@
+:host {
+  display: block;
+  max-width: 900px;
+}
+
+.intro,
+.secundario {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.secundario {
+  font: var(--mat-sys-body-small);
+}
+
+h3 {
+  margin: 8px 0;
+  font: var(--mat-sys-title-small);
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0 12px;
+}
+
+.botones {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.conflicto {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+
+  span {
+    flex: 1;
+  }
+}
+
+.resultado mat-icon[matCardAvatar] {
+  color: var(--mat-sys-primary);
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+}

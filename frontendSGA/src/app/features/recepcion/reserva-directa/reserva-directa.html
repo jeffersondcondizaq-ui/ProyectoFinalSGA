@@ -1,5 +1,180 @@
-<app-en-construccion
-  titulo="Reserva directa"
-  descripcion="Buscar o registrar al huésped y crear la reserva por el canal Directo."
-  tarjeta="[FE] Recepción: reservas Directa y Externa"
-/>
+<h1>Reserva directa</h1>
+<p class="intro">Para huéspedes que llaman, escriben o llegan en persona.</p>
+
+<mat-stepper linear orientation="vertical" (selectionChange)="cambioDePaso($event)">
+  <!-- 1. Titular -->
+  <mat-step label="Huésped titular" [stepControl]="titular">
+    <div class="buscar">
+      <mat-form-field appearance="outline">
+        <mat-label>Documento</mat-label>
+        <input
+          matInput
+          [formControl]="documento"
+          inputmode="numeric"
+          (keydown.enter)="buscarHuesped()"
+        />
+        @if (documento.hasError('required')) {
+          <mat-error>Escribe el documento</mat-error>
+        } @else if (documento.hasError('pattern')) {
+          <mat-error>Solo números, entre 6 y 10 dígitos</mat-error>
+        }
+      </mat-form-field>
+      <button matButton="outlined" type="button" (click)="buscarHuesped()" [disabled]="buscandoHuesped()">
+        <mat-icon>search</mat-icon>
+        Buscar
+      </button>
+    </div>
+    @if (usarMocks) {
+      <p class="secundario">Mocks: 1094123456 y 1053998877 existen; cualquier otro se registra.</p>
+    }
+
+    @if (titular.value; as h) {
+      <div class="huesped">
+        <mat-icon>person</mat-icon>
+        <div>
+          <strong>{{ h.nombre }}</strong>
+          <span class="secundario">{{ h.documento }} · {{ h.telefono }} · {{ h.correo }}</span>
+        </div>
+      </div>
+    }
+
+    @if (registrarNuevo()) {
+      <form [formGroup]="nuevoHuesped" (ngSubmit)="guardarHuesped()" class="nuevo">
+        <p class="nuevo-titulo">No existe un huésped con ese documento. Regístralo:</p>
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre completo</mat-label>
+          <input matInput formControlName="nombre" />
+          @if (nuevoHuesped.controls.nombre.hasError('required')) {
+            <mat-error>Escribe el nombre</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha de nacimiento</mat-label>
+          <input matInput [matDatepicker]="pickerNac" [max]="hoy" formControlName="fechaNacimiento" />
+          <mat-datepicker-toggle matIconSuffix [for]="pickerNac" />
+          <mat-datepicker #pickerNac startView="multi-year" />
+          @if (nuevoHuesped.controls.fechaNacimiento.hasError('required')) {
+            <mat-error>Elige la fecha</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Teléfono</mat-label>
+          <input matInput formControlName="telefono" inputmode="tel" />
+          @if (nuevoHuesped.controls.telefono.hasError('required')) {
+            <mat-error>Escribe el teléfono</mat-error>
+          } @else if (nuevoHuesped.controls.telefono.hasError('pattern')) {
+            <mat-error>Debe tener 10 dígitos</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Correo</mat-label>
+          <input matInput type="email" formControlName="correo" />
+          @if (nuevoHuesped.controls.correo.hasError('required')) {
+            <mat-error>Escribe el correo</mat-error>
+          } @else if (nuevoHuesped.controls.correo.hasError('email')) {
+            <mat-error>Correo no válido</mat-error>
+          }
+        </mat-form-field>
+        <div class="botones">
+          <button matButton="filled" type="submit" [disabled]="guardandoHuesped()">
+            {{ guardandoHuesped() ? 'Guardando...' : 'Registrar huésped' }}
+          </button>
+        </div>
+      </form>
+    }
+
+    <div class="botones">
+      <button matButton="filled" matStepperNext [disabled]="!titular.value">Continuar</button>
+    </div>
+  </mat-step>
+
+  <!-- 2. Estadía y apartamento -->
+  <mat-step label="Estadía y apartamento" [stepControl]="estadia">
+    <form [formGroup]="estadia" class="estadia" (ngSubmit)="buscarDisponibles()">
+      <mat-form-field appearance="outline">
+        <mat-label>Entrada y salida</mat-label>
+        <mat-date-range-input [rangePicker]="rango" [min]="hoy">
+          <input matStartDate formControlName="entrada" placeholder="Entrada" />
+          <input matEndDate formControlName="salida" placeholder="Salida" />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="rango" />
+        <mat-date-range-picker #rango />
+        @if (estadia.controls.salida.hasError('minimoUnaNoche')) {
+          <mat-error>La salida debe ser al menos un día después de la entrada</mat-error>
+        } @else if (estadia.controls.entrada.touched && estadia.controls.entrada.invalid) {
+          <mat-error>Elige las fechas</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="personas">
+        <mat-label>Personas</mat-label>
+        <input matInput type="number" min="1" formControlName="personas" />
+      </mat-form-field>
+      <button matButton="outlined" type="submit" [disabled]="consultando()">
+        <mat-icon>search</mat-icon>
+        Ver disponibles
+      </button>
+    </form>
+
+    @if (consultando()) {
+      <p>Buscando apartamentos...</p>
+    } @else if (disponibles(); as lista) {
+      @if (lista.length) {
+        <mat-radio-group [formControl]="estadia.controls.apartamento" class="apartamentos">
+          @for (apto of lista; track apto.codigo) {
+            <mat-radio-button [value]="apto.codigo">
+              <strong>{{ apto.nombre }}</strong>
+              <span class="secundario">
+                {{ apto.codigo }} · {{ apto.numDormitorios }} dormitorios · hasta
+                {{ apto.capacidadMaxima }} personas
+              </span>
+            </mat-radio-button>
+          }
+        </mat-radio-group>
+      } @else {
+        <p>No hay apartamentos disponibles para esas fechas y personas.</p>
+      }
+    }
+
+    <div class="botones">
+      <button matButton matStepperPrevious>Atrás</button>
+      <button matButton="filled" matStepperNext [disabled]="!estadia.controls.apartamento.value">
+        Continuar
+      </button>
+    </div>
+  </mat-step>
+
+  <!-- 3. Ocupantes -->
+  <mat-step label="Ocupantes" [stepControl]="ocupantes">
+    <app-ocupantes-form [ocupantes]="ocupantes" />
+    <div class="botones">
+      <button matButton matStepperPrevious>Atrás</button>
+      <button matButton="filled" matStepperNext (click)="ocupantes.markAllAsTouched()">
+        Ver resumen
+      </button>
+    </div>
+  </mat-step>
+
+  <!-- 4. Resumen -->
+  <mat-step label="Resumen y registro">
+    @if (cotizando()) {
+      <p>Calculando el valor...</p>
+    } @else if (cotizacion(); as cot) {
+      <p>
+        Titular: <strong>{{ titular.value?.nombre }}</strong> · Apartamento:
+        <strong>{{ estadia.controls.apartamento.value }}</strong>
+      </p>
+      <app-desglose-cotizacion [cotizacion]="cot" />
+      <div class="botones">
+        <button matButton matStepperPrevious [disabled]="creando()">Atrás</button>
+        <button matButton="filled" (click)="confirmar()" [disabled]="creando()">
+          {{ creando() ? 'Registrando...' : 'Registrar reserva' }}
+        </button>
+      </div>
+    } @else {
+      <p>No se pudo calcular el valor. Revisa los datos.</p>
+      <div class="botones">
+        <button matButton matStepperPrevious>Atrás</button>
+      </div>
+    }
+  </mat-step>
+</mat-stepper>

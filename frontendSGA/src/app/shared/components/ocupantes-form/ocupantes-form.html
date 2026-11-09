@@ -1,0 +1,38 @@
+@for (ocupante of ocupantes().controls; track ocupante) {
+  <div class="ocupante" [formGroup]="ocupante">
+    <span class="numero">{{ $index + 1 }}</span>
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre completo</mat-label>
+      <input matInput formControlName="nombre" />
+      @if (ocupante.controls.nombre.hasError('required')) {
+        <mat-error>Escribe el nombre</mat-error>
+      }
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Fecha de nacimiento</mat-label>
+      <input matInput [matDatepicker]="picker" [max]="hoy" formControlName="fechaNacimiento" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker" />
+      <mat-datepicker #picker startView="multi-year" />
+      @if (ocupante.controls.fechaNacimiento.hasError('required')) {
+        <mat-error>Elige la fecha</mat-error>
+      }
+    </mat-form-field>
+    @if (editable()) {
+      <button
+        matIconButton
+        type="button"
+        aria-label="Quitar ocupante"
+        [disabled]="ocupantes().length === 1"
+        (click)="quitar($index)"
+      >
+        <mat-icon>delete</mat-icon>
+      </button>
+    }
+  </div>
+}
+@if (editable()) {
+  <button matButton type="button" (click)="agregar()">
+    <mat-icon>person_add</mat-icon>
+    Agregar ocupante
+  </button>
+}

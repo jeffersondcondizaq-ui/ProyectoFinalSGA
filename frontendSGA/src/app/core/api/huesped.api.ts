@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Huesped } from '../../shared/models';
+import { Huesped, NuevoHuespedRequest } from '../../shared/models';
+import { SIN_AVISO_ERROR } from '../http/error.interceptor';
 
 /** GestionHuespedUseCase del backend. */
 @Injectable({ providedIn: 'root' })
@@ -19,6 +20,12 @@ export class HuespedApi {
   }
 
   buscar(documento: string): Observable<Huesped> {
-    return this.http.get<Huesped>(`${this.url}/${documento}`);
+    return this.http.get<Huesped>(`${this.url}/${documento}`, {
+      context: new HttpContext().set(SIN_AVISO_ERROR, true),
+    });
+  }
+
+  crear(nuevoHuesped: NuevoHuespedRequest): Observable<Huesped> {
+    return this.http.post<Huesped>(this.url, nuevoHuesped);
   }
 }

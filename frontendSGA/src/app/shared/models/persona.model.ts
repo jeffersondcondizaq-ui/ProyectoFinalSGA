@@ -18,6 +18,7 @@ export interface Huesped {
   usuario: string;
   foto?: string;
 }
+export type NuevoHuespedRequest = Omit<Huesped, 'edad' | 'usuario' | 'foto'>;
 
 export interface RegistroHuespedRequest extends Omit<Huesped, 'edad'> {
   contrasena: string;

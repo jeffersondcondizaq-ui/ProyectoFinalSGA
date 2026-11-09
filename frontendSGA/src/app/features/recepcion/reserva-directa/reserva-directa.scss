@@ -1,0 +1,67 @@
+:host {
+  display: block;
+  max-width: 900px;
+}
+
+.intro,
+.secundario {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.secundario {
+  display: block;
+  font: var(--mat-sys-body-small);
+}
+
+.buscar,
+.estadia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 12px;
+
+  button {
+    margin-top: 8px;
+  }
+
+  .personas {
+    width: 120px;
+  }
+}
+
+.huesped {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+
+.nuevo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0 12px;
+  margin-top: 8px;
+
+  .nuevo-titulo,
+  .botones {
+    grid-column: 1 / -1;
+  }
+}
+
+.apartamentos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}

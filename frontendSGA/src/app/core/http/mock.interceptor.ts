@@ -6,7 +6,7 @@ import {
 } from '@angular/common/http';
 import { catchError, delay, filter, map, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {   CotizarRequest, Folio, LoginRequest, PagoRequest, RegistroHuespedRequest, } from '../../shared/models';
+import {   CotizarRequest, Folio, LoginRequest, PagoRequest, RegistroHuespedRequest, NuevoHuespedRequest, ReservaExternaRequest } from '../../shared/models';
 
 /**
  * Mientras no hay backend, responde con los JSON de public/mocks:
@@ -59,6 +59,47 @@ export const mockInterceptor: HttpInterceptorFn = (req, next) => {
         body: null,
       }),
     );
+  }
+
+    if (req.method === 'POST' && ruta === '/huespedes') {
+    // El backend real lo guarda y le asigna usuario = documento.
+    const huesped = req.body as NuevoHuespedRequest;
+    return of(
+      new HttpResponse({ status: 201, body: { ...huesped, usuario: huesped.documento } }),
+    ).pipe(delay(400));
+  }
+
+  if (req.method === 'POST' && ruta === '/reservas/directa') {
+    return next(
+      req.clone({ method: 'GET', url: '/mocks/reservas/directa-creada.json', body: null }),
+    );
+  }
+
+  if (req.method === 'POST' && ruta === '/reservas/externa') {
+    // Simula las dos reglas del enunciado; el backend real las valida contra las reservas reales.
+    const externa = req.body as ReservaExternaRequest;
+    if (externa.codigoExterno.toUpperCase() === 'BK-558201') {
+      return throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 409,
+            error: { mensaje: 'El código externo BK-558201 ya creó la reserva R-004' },
+          }),
+      );
+    }
+    if (externa.codigoApartamento === 'APT-101') {
+      return throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 409,
+            error: {
+              mensaje: 'Choca con la reserva R-001: quedó registrada como conflicto de canal',
+              conflicto: true,
+            },
+          }),
+      );
+    }
+    return next(req.clone({ method: 'GET', url: '/mocks/reservas/R-004.json', body: null }));
   }
 
   if (req.method === 'POST' && ruta === '/reservas/portal') {
