@@ -1,8 +1,9 @@
 package com.jefferson.notifications.domain.model.apartamento;
 
+import com.jefferson.notifications.domain.model.comun.IRangoFechas;
 import java.time.LocalDate;
 
-public class Bloqueo {
+public class Bloqueo implements IRangoFechas {
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
     private String motivo;
@@ -28,6 +29,7 @@ public class Bloqueo {
         return false;
     }
 
+    @Override
     public boolean seCruzaCon(LocalDate entrada, LocalDate salida) {
         if (entrada == null || salida == null) {
             return false;
@@ -39,11 +41,12 @@ public class Bloqueo {
         return false;
     }
 
-
+    @Override
     public LocalDate getFechaInicio() {
         return fechaInicio;
     }
 
+    @Override
     public LocalDate getFechaFin() {
         return fechaFin;
     }
