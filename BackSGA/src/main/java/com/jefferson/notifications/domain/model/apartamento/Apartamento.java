@@ -1,5 +1,6 @@
 package com.jefferson.notifications.domain.model.apartamento;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class Apartamento {
@@ -15,6 +16,21 @@ public class Apartamento {
     private ArrayList<Bloqueo> bloqueos;
     private ArrayList<Novedad> novedades;
     private ArrayList<String> fotos;
+
+    public Apartamento(String codigo, String nombre, int numDormitorios, int capacidadMaxima, ArrayList<String> caracteristicas, EstadoApartamento estado, String motivoFueraServicio, boolean activo, ArrayList<Tarifa> tarifas, ArrayList<Bloqueo> bloqueos, ArrayList<Novedad> novedades, ArrayList<String> fotos) {
+        this.codigo = codigo;
+        this.nombre = nombre;
+        this.numDormitorios = numDormitorios;
+        this.capacidadMaxima = capacidadMaxima;
+        this.caracteristicas = caracteristicas;
+        this.estado = estado;
+        this.motivoFueraServicio = motivoFueraServicio;
+        this.activo = activo;
+        this.tarifas = tarifas;
+        this.bloqueos = bloqueos;
+        this.novedades = novedades;
+        this.fotos = fotos;
+    }
 
     // Getters y Setters
 
@@ -115,4 +131,120 @@ public class Apartamento {
     }
 
     // Metodos
+    public void definirTarifa(TipoTemporada tipo, long valor) {
+        if (tipo == null) {
+            return;
+        }
+
+        for (int i = 0; i < tarifas.size(); i++) {
+            Tarifa tarifa = tarifas.get(i);
+            if (tarifa.getTipoTemporada() == tipo) {
+                tarifa.setValorPersonaNoche(valor);
+                return;
+            }
+        }
+
+        Tarifa nueva = new Tarifa(tipo, valor);
+        tarifas.add(nueva);
+    }
+
+    public long getTarifa(TipoTemporada tipo) {
+        for (int i = 0; i < tarifas.size(); i++) {
+            Tarifa tarifa = tarifas.get(i);
+            if (tarifa.getTipoTemporada() == tipo) {
+                return tarifa.getValorPersonaNoche();
+            }
+        }
+        return 0;
+    }
+
+
+    public boolean cambiarEstado(EstadoApartamento nuevo, String motivo) {
+        if (nuevo == null) {
+            return false;
+        }
+
+        if (nuevo == EstadoApartamento.FUERA_DE_SERVICIO) {
+
+            if (motivo == null || motivo.isEmpty()) {
+                return false;
+            }
+            this.estado = nuevo;
+            this.motivoFueraServicio = motivo;
+            return true;
+        }
+
+        this.estado = nuevo;
+        this.motivoFueraServicio = null;
+        return true;
+    }
+
+    public boolean estaBloqueado(LocalDate noche) {
+        for (int i = 0; i < bloqueos.size(); i++) {
+            Bloqueo bloqueo = bloqueos.get(i);
+            if (bloqueo.contieneNoche(noche)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public boolean agregarBloqueo(Bloqueo bloqueo) {
+        if (bloqueo == null) {
+            return false;
+        }
+
+        LocalDate inicio = bloqueo.getFechaInicio();
+        LocalDate fin = bloqueo.getFechaFin();
+
+        if (inicio == null || fin == null) {
+            return false;
+        }
+
+        // El bloqueo debe cubrir al menos una noche
+        if (!fin.isAfter(inicio)) {
+            return false;
+        }
+
+        bloqueos.add(bloqueo);
+        return true;
+    }
+
+    public void registrarNovedad(Novedad novedad) {
+        if (novedad == null) {
+            return;
+        }
+        novedades.add(novedad);
+    }
+
+
+    public boolean admiteOcupantes(int cantidad) {
+        if (cantidad <= 0) {
+            return false;
+        }
+        if (cantidad > capacidadMaxima) {
+            return false;
+        }
+        return true;
+    }
+
+    public void agregarCaracteristica(String caracteristica) {
+        if (caracteristica == null || caracteristica.isEmpty()) {
+            return;
+        }
+
+        // No se repite una característica que ya esté en la lista
+        for (int i = 0; i < caracteristicas.size(); i++) {
+            if (caracteristicas.get(i).equals(caracteristica)) {
+                return;
+            }
+        }
+
+        caracteristicas.add(caracteristica);
+    }
+
+    public void desactivar() {
+        this.activo = false;
+    }
 }
