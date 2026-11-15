@@ -32,6 +32,14 @@ public abstract class Usuario extends Persona implements IAutenticable{
         return correo;
     }
 
+    public String getDocumento() {
+        return documento;
+    }
+
+    public String getUsuario() {
+        return usuario;
+    }
+
     public void setCorreo(String correo) {
         this.correo = correo;
     }

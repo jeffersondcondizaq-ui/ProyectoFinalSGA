@@ -12,7 +12,7 @@ public class Ocupante extends Persona {
     }
 
     public boolean esPagador(LocalDate fechaEntrada) {
-        int edad = persona.calcularEdad(fechaEntrada); ;
+        int edad = persona.calcularEdad(fechaEntrada);
         if (edad >= EDAD_MINIMA_PAGO) {
             return true;
         }

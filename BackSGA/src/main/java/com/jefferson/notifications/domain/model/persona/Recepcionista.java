@@ -2,7 +2,7 @@ package com.jefferson.notifications.domain.model.persona;
 
 import java.time.LocalDate;
 
-public abstract class Recepcionista extends Empleado {
+public class Recepcionista extends Empleado {
 
     public Recepcionista(String nombre, LocalDate fechaNacimiento, String documento, String telefono,
                          String correo, String usuario, String contrasena, LocalDate fechaContratacion) {
