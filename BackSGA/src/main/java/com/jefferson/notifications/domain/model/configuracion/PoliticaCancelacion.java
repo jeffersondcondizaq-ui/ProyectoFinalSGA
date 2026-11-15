@@ -16,6 +16,9 @@ public class PoliticaCancelacion {
         this.porcentajeRetencionParcial = porcentajeRetencionParcial;
     }
 
+    public PoliticaCancelacion() {
+    }
+
 
     public long calcularRetencion(long valorEstancia, LocalDate entrada, LocalDateTime ahora) {
         if (entrada == null || ahora == null) {
