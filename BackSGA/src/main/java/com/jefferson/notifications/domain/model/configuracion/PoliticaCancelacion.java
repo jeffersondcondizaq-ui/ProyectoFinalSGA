@@ -1,5 +1,8 @@
 package com.jefferson.notifications.domain.model.configuracion;
 
+import com.jefferson.notifications.domain.model.Alojamiento;
+
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -25,28 +28,15 @@ public class PoliticaCancelacion {
             return valorEstancia;
         }
 
-        // Se cuentan los días que faltan desde hoy hasta la fecha de entrada
-        int diasQueFaltan = 0;
-        LocalDate hoy = ahora.toLocalDate();
-        while (hoy.isBefore(entrada)) {
-            hoy = hoy.plusDays(1);
-            diasQueFaltan = diasQueFaltan + 1;
-        }
+        LocalDateTime horaDeEntrada = entrada.atTime(Alojamiento.HORA_ENTRADA);
+        long horasQueFaltan = Duration.between(ahora, horaDeEntrada).toHours();
 
-        // Las horas de retención total se pasan a días (48 horas = 2 días)
-        int diasRetencionTotal = horasRetencionTotal / 24;
-
-        // Con mucha antelación se devuelve todo: no se retiene nada
-        if (diasQueFaltan > diasDevolucionTotal) {
+        if (horasQueFaltan > diasDevolucionTotal * 24L) {
             return 0;
         }
-
-        // Muy sobre el tiempo (o ya pasó la fecha, como en el no-show): se retiene todo
-        if (diasQueFaltan < diasRetencionTotal) {
+        if (horasQueFaltan < horasRetencionTotal) {
             return valorEstancia;
         }
-
-        // En el medio se retiene el porcentaje parcial (por defecto el 50 %)
         return valorEstancia * porcentajeRetencionParcial / 100;
     }
 

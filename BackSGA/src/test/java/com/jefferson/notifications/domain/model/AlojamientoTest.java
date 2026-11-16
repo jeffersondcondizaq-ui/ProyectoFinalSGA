@@ -1,6 +1,7 @@
 package com.jefferson.notifications.domain.model;
 
 import com.jefferson.notifications.domain.exception.ReglaNegocioException;
+import com.jefferson.notifications.domain.model.configuracion.PoliticaCancelacion;
 import com.jefferson.notifications.domain.model.apartamento.Apartamento;
 import com.jefferson.notifications.domain.model.apartamento.EstadoApartamento;
 import com.jefferson.notifications.domain.model.persona.Huesped;
@@ -447,5 +448,114 @@ class AlojamientoTest {
         alojamiento.hacerCheckIn("R-1", hoy.atTime(15, 0));
         assertThrows(ReglaNegocioException.class,
                 () -> alojamiento.declararNoShow("R-1", hoy.atTime(23, 0)));
+    }
+    // ---------------- Regla: política de cancelación y valor congelado ----------------
+
+    /**
+     * Reserva de 2 noches para 1 persona en Baja (valor 200.000) que entra en "diasAntes" días,
+     * con el 30 % (60.000) ya pagado.
+     */
+    private ReservaDirecta reservaPagada(int diasAntes) {
+        definirTarifas();
+        LocalDate entrada = hoy.plusDays(diasAntes);
+        ArrayList<Ocupante> grupo = ocupantes(1);
+        ReservaDirecta r = new ReservaDirecta("R-1", laura, apartamento, entrada, entrada.plusDays(2), grupo,
+                alojamiento.cotizar("APT-101", entrada, entrada.plusDays(2), grupo),
+                alojamiento.getPoliticaCancelacion());
+        alojamiento.crearReserva(r);
+        r.getFolio().registrarPago(new Pago(MedioPago.TRANSFERENCIA, 60_000, "Anticipo", false));
+        return r;
+    }
+
+    /** Momento a "horas" horas de la entrada (3:00 p. m. del día de entrada). */
+    private LocalDateTime horasAntesDeEntrar(ReservaDirecta r, int horas) {
+        return r.getFechaEntrada().atTime(15, 0).minusHours(horas);
+    }
+
+    @Test
+    void conMasDe7DiasSeDevuelveTodoLoPagado() {
+        ReservaDirecta r = reservaPagada(10);
+        assertEquals(60_000, alojamiento.calcularDevolucion("R-1", horasAntesDeEntrar(r, 8 * 24)));
+    }
+
+    @Test
+    void entre2y7DiasSeRetieneElCincuentaPorCientoDeLaEstancia() {
+        ReservaDirecta r = reservaPagada(10);
+        r.getFolio().registrarPago(new Pago(MedioPago.EFECTIVO, 140_000, "Resto", false)); // pagó todo
+        // Retiene 50 % de 200.000 = 100.000; devuelve 200.000 - 100.000
+        assertEquals(100_000, alojamiento.calcularDevolucion("R-1", horasAntesDeEntrar(r, 5 * 24)));
+        // Justo en el límite de 48 horas todavía es 50 %
+        assertEquals(100_000, alojamiento.calcularDevolucion("R-1", horasAntesDeEntrar(r, 48)));
+    }
+
+    @Test
+    void conMenosDe48HorasSeRetieneTodo() {
+        ReservaDirecta r = reservaPagada(10);
+        assertEquals(0, alojamiento.calcularDevolucion("R-1", horasAntesDeEntrar(r, 47)));
+    }
+
+    @Test
+    void laRetencionNuncaDevuelveMasDeLoPagado() {
+        ReservaDirecta r = reservaPagada(10);
+        // Pagó 60.000 y se retienen 100.000: no se devuelve nada (no queda negativo)
+        assertEquals(0, alojamiento.calcularDevolucion("R-1", horasAntesDeEntrar(r, 5 * 24)));
+    }
+
+    @Test
+    void cancelarLiberaLasNochesYDejaElFolioEnCero() {
+        ReservaDirecta r = reservaPagada(10);
+        long devuelto = alojamiento.cancelarReserva("R-1", horasAntesDeEntrar(r, 8 * 24));
+
+        assertEquals(60_000, devuelto);
+        assertEquals(EstadoReserva.CANCELADA, r.getEstado());
+        assertEquals(0, r.getFolio().calcularSaldo());
+        assertTrue(alojamiento.estaDisponible(apartamento, r.getFechaEntrada(), r.getFechaSalida()));
+    }
+
+    @Test
+    void cancelarConRetencionRegistraLaPenalidad() {
+        ReservaDirecta r = reservaPagada(10);
+        long devuelto = alojamiento.cancelarReserva("R-1", horasAntesDeEntrar(r, 24));
+        assertEquals(0, devuelto);
+        assertEquals(60_000, r.getFolio().calcularTotalCargos()); // solo queda la penalidad
+        assertEquals(0, r.getFolio().calcularSaldo());
+    }
+
+    @Test
+    void noSeCancelaUnaReservaEnCurso() {
+        confirmadaParaHoy();
+        alojamiento.hacerCheckIn("R-1", hoy.atTime(15, 0));
+        assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.cancelarReserva("R-1", hoy.atTime(16, 0)));
+    }
+
+    @Test
+    void enNoShowSeRetieneTodo() {
+        ReservaDirecta r = reservaPagada(0);
+        alojamiento.confirmarReserva("R-1");
+        alojamiento.declararNoShow("R-1", hoy.atTime(23, 0));
+        assertEquals(60_000, r.getFolio().calcularTotalCargos()); // lo pagado queda como penalidad
+        assertEquals(0, r.getFolio().calcularSaldo());
+    }
+
+    @Test
+    void elValorYLaPoliticaQuedanCongeladosAlCrearLaReserva() {
+        ReservaDirecta r = reservaPagada(10);
+        r.getFolio().registrarPago(new Pago(MedioPago.EFECTIVO, 140_000, "Resto", false));
+
+        // Después de crear la reserva suben las tarifas y la política se vuelve más estricta
+        apartamento.definirTarifa(TipoTemporada.BAJA, 999_000);
+        alojamiento.configurarPolitica(new PoliticaCancelacion(30, 48, 100));
+
+        assertEquals(200_000, r.getValorEstancia());
+        // Con la política congelada (7 días, 50 %) a 8 días de entrar se devuelve todo
+        assertEquals(200_000, alojamiento.calcularDevolucion("R-1", horasAntesDeEntrar(r, 8 * 24)));
+    }
+
+    @Test
+    void elFolioArrancaConElCargoDelAlojamiento() {
+        ReservaDirecta r = reservaPagada(10);
+        assertEquals(200_000, r.getFolio().calcularTotalCargos());
+        assertEquals(140_000, r.getFolio().calcularSaldo()); // 200.000 - 60.000 pagados
     }
 }

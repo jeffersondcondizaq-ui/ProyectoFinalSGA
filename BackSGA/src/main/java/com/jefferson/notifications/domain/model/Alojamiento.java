@@ -16,6 +16,11 @@ import com.jefferson.notifications.domain.model.apartamento.EstadoApartamento;
 import com.jefferson.notifications.domain.model.persona.Ocupante;
 import com.jefferson.notifications.domain.model.reserva.DetalleNoche;
 import com.jefferson.notifications.domain.model.reserva.EstadoReserva;
+import com.jefferson.notifications.domain.model.folio.Cargo;
+import com.jefferson.notifications.domain.model.folio.Devolucion;
+import com.jefferson.notifications.domain.model.folio.Folio;
+import com.jefferson.notifications.domain.model.folio.MovimientoFolio;
+import com.jefferson.notifications.domain.model.folio.TipoCargo;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -156,6 +161,8 @@ public class Alojamiento {
             throw new ReglaNegocioException("El apartamento " + reserva.getApartamento().getCodigo()
                     + " no está disponible en esas fechas");
         }
+        reserva.getFolio().agregarCargo(new Cargo(TipoCargo.ALOJAMIENTO, reserva.getValorEstancia(),
+                "Alojamiento " + reserva.calcularNoches() + " noche(s)", false));
         reservas.add(reserva);
         return true;
     }
@@ -403,6 +410,27 @@ public class Alojamiento {
         reserva.getApartamento().cambiarEstado(EstadoApartamento.PENDIENTE_PREPARACION, null);
         return true;
     }
+    /**
+     * Cuánto se le devolvería al huésped si cancela en el momento "ahora".
+     */
+    public long calcularDevolucion(String codigo, LocalDateTime ahora) {
+        Reserva reserva = buscarReserva(codigo);
+        long pagado = reserva.getFolio().calcularTotalPagos();
+        return reserva.getPolitica().calcularDevolucion(pagado, reserva.getValorEstancia(),
+                reserva.getFechaEntrada(), ahora);
+    }
+
+    public long cancelarReserva(String codigo, LocalDateTime ahora) {
+        Reserva reserva = buscarReserva(codigo);
+        if (reserva.getEstado() != EstadoReserva.PENDIENTE && reserva.getEstado() != EstadoReserva.CONFIRMADA) {
+            throw new ReglaNegocioException("Solo se puede cancelar una reserva Pendiente o Confirmada (la reserva "
+                    + codigo + " está " + reserva.getEstado() + ")");
+        }
+        long devolucion = calcularDevolucion(codigo, ahora);
+        cambiarEstado(reserva, EstadoReserva.CANCELADA);
+        liquidarFolio(reserva, devolucion, "cancelación");
+        return devolucion;
+    }
 
     /**
      * No-show: el titular de una reserva Confirmada no llegó antes de las 10:00 p. m.
@@ -419,7 +447,29 @@ public class Alojamiento {
                     + reserva.getFechaEntrada());
         }
         cambiarEstado(reserva, EstadoReserva.NO_SHOW);
+        liquidarFolio(reserva, 0, "no-show");
         return true;
+    }
+    /**
+     * Deja el folio de una reserva cancelada o en no-show con saldo cero
+     */
+    private void liquidarFolio(Reserva reserva, long devolucion, String motivo) {
+        Folio folio = reserva.getFolio();
+        long pagado = folio.calcularTotalPagos();
+        long retenido = pagado - devolucion;
+
+        ArrayList<MovimientoFolio> movimientos = new ArrayList<>(folio.getMovimientos());
+        for (MovimientoFolio movimiento : movimientos) {
+            if (movimiento instanceof Cargo cargo && cargo.getTipo() == TipoCargo.ALOJAMIENTO) {
+                folio.corregir(cargo);
+            }
+        }
+        if (retenido > 0) {
+            folio.agregarCargo(new Cargo(TipoCargo.PENALIDAD, retenido, "Retención por " + motivo, false));
+        }
+        if (devolucion > 0) {
+            folio.registrarDevolucion(new Devolucion(devolucion, "Devolución por " + motivo, false));
+        }
     }
 
     public Reserva buscarReserva(String codigo) {
