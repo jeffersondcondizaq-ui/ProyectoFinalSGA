@@ -1,5 +1,154 @@
-<app-en-construccion
-  titulo="Reportes"
-  descripcion="Ocupación, ingresos, reservas por canal, saldos pendientes y novedades."
-  tarjeta="[FE] Admin: reportes"
-/>
+<h1>Reportes</h1>
+
+<form [formGroup]="filtro" (ngSubmit)="consultar()" class="filtro">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Periodo</mat-label>
+    <mat-date-range-input [rangePicker]="rango">
+      <input matStartDate formControlName="desde" placeholder="Desde" />
+      <input matEndDate formControlName="hasta" placeholder="Hasta" />
+    </mat-date-range-input>
+    <mat-datepicker-toggle matIconSuffix [for]="rango" />
+    <mat-date-range-picker #rango />
+  </mat-form-field>
+  <button matButton="filled" type="submit" [disabled]="cargando()">
+    <mat-icon>refresh</mat-icon>
+    Consultar
+  </button>
+</form>
+<p class="nota">
+  El periodo aplica a ocupación, ingresos y reservas por canal. Saldos y novedades son al día de
+  hoy.
+</p>
+
+@if (datos(); as d) {
+<!-- Cifras principales -->
+<div class="kpis">
+  <mat-card appearance="outlined">
+    <mat-card-content>
+      <span class="kpi-label">Ingresos del periodo</span>
+      <span class="kpi-valor">{{ d.ingresos.total | cop }}</span>
+    </mat-card-content>
+  </mat-card>
+  <mat-card appearance="outlined">
+    <mat-card-content>
+      <span class="kpi-label">Reservas del periodo</span>
+      <span class="kpi-valor">{{ totalReservas() }}</span>
+    </mat-card-content>
+  </mat-card>
+  <mat-card appearance="outlined">
+    <mat-card-content>
+      <span class="kpi-label">Saldos por cobrar</span>
+      <span class="kpi-valor deuda">{{ totalSaldos() | cop }}</span>
+    </mat-card-content>
+  </mat-card>
+</div>
+
+<div class="grid">
+  <!-- Ocupación por apartamento -->
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Ocupación por apartamento</mat-card-title>
+      <mat-card-subtitle>Noches ocupadas sobre las noches del periodo</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      @for (o of d.ocupacion; track o.codigoApartamento) {
+      <div class="barra">
+        <span class="barra-nombre">{{ o.codigoApartamento }} · {{ o.nombre }}</span>
+        <div class="barra-fondo">
+          <div class="barra-relleno" [style.width.%]="o.porcentaje"></div>
+        </div>
+        <span class="barra-valor">{{ o.porcentaje }} % · {{ o.nochesOcupadas }} noches</span>
+      </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Reservas por canal -->
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Reservas por canal</mat-card-title>
+      <mat-card-subtitle>Incluye canceladas y no-show</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <table mat-table [dataSource]="d.canales">
+        <ng-container matColumnDef="canal">
+          <th mat-header-cell *matHeaderCellDef>Canal</th>
+          <td mat-cell *matCellDef="let c">{{ canal(c.canal) }}</td>
+        </ng-container>
+        <ng-container matColumnDef="total">
+          <th mat-header-cell *matHeaderCellDef class="numero">Total</th>
+          <td mat-cell *matCellDef="let c" class="numero">{{ c.total }}</td>
+        </ng-container>
+        <ng-container matColumnDef="canceladas">
+          <th mat-header-cell *matHeaderCellDef class="numero">Canceladas</th>
+          <td mat-cell *matCellDef="let c" class="numero">{{ c.canceladas }}</td>
+        </ng-container>
+        <ng-container matColumnDef="noShow">
+          <th mat-header-cell *matHeaderCellDef class="numero">No-show</th>
+          <td mat-cell *matCellDef="let c" class="numero">{{ c.noShow }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnasCanal"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnasCanal"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Apartamentos con más novedades -->
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Apartamentos con más novedades</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      @for (n of d.novedades; track n.codigoApartamento) {
+      <div class="barra">
+        <span class="barra-nombre">{{ n.codigoApartamento }} · {{ n.nombre }}</span>
+        <div class="barra-fondo">
+          <div
+            class="barra-relleno alerta"
+            [style.width.%]="(n.cantidad / maxNovedades()) * 100"
+          ></div>
+        </div>
+        <span class="barra-valor">{{ n.cantidad }}</span>
+      </div>
+      } @empty {
+      <p class="nota">No hay novedades registradas.</p>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Saldos pendientes -->
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Saldos pendientes</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <table mat-table [dataSource]="d.saldos">
+        <ng-container matColumnDef="codigo">
+          <th mat-header-cell *matHeaderCellDef>Reserva</th>
+          <td mat-cell *matCellDef="let r">{{ r.codigo }}</td>
+        </ng-container>
+        <ng-container matColumnDef="titular">
+          <th mat-header-cell *matHeaderCellDef>Titular</th>
+          <td mat-cell *matCellDef="let r">{{ r.nombreTitular }}</td>
+        </ng-container>
+        <ng-container matColumnDef="apartamento">
+          <th mat-header-cell *matHeaderCellDef>Apto.</th>
+          <td mat-cell *matCellDef="let r">{{ r.codigoApartamento }}</td>
+        </ng-container>
+        <ng-container matColumnDef="salida">
+          <th mat-header-cell *matHeaderCellDef>Salida</th>
+          <td mat-cell *matCellDef="let r">{{ r.fechaSalida }}</td>
+        </ng-container>
+        <ng-container matColumnDef="saldo">
+          <th mat-header-cell *matHeaderCellDef class="numero">Saldo</th>
+          <td mat-cell *matCellDef="let r" class="numero deuda">{{ r.saldo | cop }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnasSaldos"></tr>
+        <tr mat-row *matRowDef="let fila; columns: columnasSaldos"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>
+} @else if (cargando()) {
+<p>Consultando reportes...</p>
+}

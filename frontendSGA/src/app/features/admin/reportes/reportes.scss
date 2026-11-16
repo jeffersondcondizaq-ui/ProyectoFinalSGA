@@ -1,0 +1,94 @@
+.filtro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.nota {
+  margin: 8px 0 16px;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+
+  mat-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.kpi-label {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.kpi-valor {
+  font: var(--mat-sys-headline-small);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 16px;
+
+  mat-card {
+    overflow-x: auto;
+  }
+}
+
+/* Barras horizontales simples, sin librerías de gráficos */
+.barra {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.barra-nombre {
+  font: var(--mat-sys-body-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barra-fondo {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--mat-sys-surface-container-high);
+  overflow: hidden;
+}
+
+.barra-relleno {
+  height: 100%;
+  border-radius: 6px;
+  background: var(--mat-sys-primary);
+
+  &.alerta {
+    background: var(--mat-sys-tertiary);
+  }
+}
+
+.barra-valor {
+  font: var(--mat-sys-label-medium);
+  white-space: nowrap;
+}
+
+table {
+  width: 100%;
+}
+
+.numero {
+  text-align: right;
+}
+
+.deuda {
+  color: var(--mat-sys-error);
+}
