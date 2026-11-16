@@ -5,8 +5,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AlojamientoMemoriaAdapter implements AlojamientoRepositoryPort {
-    private Alojamiento alojamiento = new Alojamiento("Aparta-Suites UQ","Salento");
-
+    private Alojamiento alojamiento = DatosSemilla.crear();
     @Override
     public Alojamiento obtener(){
         return alojamiento;
