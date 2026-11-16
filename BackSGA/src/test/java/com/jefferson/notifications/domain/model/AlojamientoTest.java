@@ -558,4 +558,85 @@ class AlojamientoTest {
         assertEquals(200_000, r.getFolio().calcularTotalCargos());
         assertEquals(140_000, r.getFolio().calcularSaldo()); // 200.000 - 60.000 pagados
     }
+    // ---------------- Regla: reservas externas y conflictos de canal ----------------
+
+    private ReservaExterna externa(String codigo, String codigoExterno, LocalDate entrada, LocalDate salida) {
+        definirTarifas();
+        ArrayList<Ocupante> grupo = ocupantes(2);
+        return new ReservaExterna(codigo, laura, apartamento, entrada, salida, grupo,
+                alojamiento.cotizar("APT-101", entrada, salida, grupo),
+                alojamiento.getPoliticaCancelacion(), codigoExterno, "Booking");
+    }
+
+    @Test
+    void recibeUnaReservaExternaSinChoqueYQuedaConfirmada() {
+        ReservaExterna r = externa("R-1", "BK-100", hoy.plusDays(1), hoy.plusDays(3));
+        assertTrue(alojamiento.recibirReservaExterna(r));
+        assertEquals(EstadoReserva.CONFIRMADA, r.getEstado());
+        assertEquals(1, alojamiento.getReservas().size());
+    }
+
+    @Test
+    void laComisionDeLaPlataformaEsDel15PorCiento() {
+        // 2 noches x 2 personas x 100.000 = 400.000; comisión 60.000
+        ReservaExterna r = externa("R-1", "BK-100", hoy.plusDays(1), hoy.plusDays(3));
+        alojamiento.recibirReservaExterna(r);
+        assertEquals(400_000, r.getValorEstancia());
+        assertEquals(60_000, r.calcularComision());
+    }
+
+    @Test
+    void unaExternaQueChocaSeRechazaYQuedaComoConflicto() {
+        ReservaDirecta directa = reserva("R-1", hoy.plusDays(1), hoy.plusDays(4));
+        alojamiento.crearReserva(directa);
+
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.recibirReservaExterna(externa("R-2", "BK-200", hoy.plusDays(3), hoy.plusDays(5))));
+        assertEquals("La reserva externa BK-200 choca con la reserva R-1 y se registró como conflicto de canal",
+                error.getMessage());
+
+        assertEquals(1, alojamiento.getConflictosCanal().size());
+        assertEquals("BK-200", alojamiento.getConflictosCanal().get(0).getCodigoExterno());
+        assertEquals(directa, alojamiento.getConflictosCanal().get(0).getReservaExistente());
+    }
+
+    @Test
+    void elConflictoNuncaReemplazaALaReservaExistente() {
+        ReservaDirecta directa = reserva("R-1", hoy.plusDays(1), hoy.plusDays(4));
+        alojamiento.crearReserva(directa);
+        assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.recibirReservaExterna(externa("R-2", "BK-200", hoy.plusDays(1), hoy.plusDays(4))));
+
+        assertEquals(1, alojamiento.getReservas().size());
+        assertEquals(directa, alojamiento.getReservas().get(0));
+        assertEquals(EstadoReserva.PENDIENTE, directa.getEstado());
+    }
+
+    @Test
+    void unMismoCodigoExternoNoCreaDosReservas() {
+        alojamiento.recibirReservaExterna(externa("R-1", "BK-100", hoy.plusDays(1), hoy.plusDays(3)));
+        assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.recibirReservaExterna(externa("R-2", "BK-100", hoy.plusDays(10), hoy.plusDays(12))));
+        assertEquals(1, alojamiento.getReservas().size());
+    }
+
+    @Test
+    void unaExternaNoChocaConUnaReservaCancelada() {
+        ReservaDirecta cancelada = reserva("R-1", hoy.plusDays(1), hoy.plusDays(3));
+        alojamiento.crearReserva(cancelada);
+        cancelada.cambiarEstado(EstadoReserva.CANCELADA);
+
+        assertTrue(alojamiento.recibirReservaExterna(externa("R-2", "BK-300", hoy.plusDays(1), hoy.plusDays(3))));
+        assertEquals(0, alojamiento.getConflictosCanal().size());
+    }
+
+    @Test
+    void lasExternasCumplenLasDemasReglas() {
+        // Capacidad: el apartamento admite 2, la externa trae 3
+        ArrayList<Ocupante> grupo = ocupantes(3);
+        ReservaExterna muchos = new ReservaExterna("R-1", laura, apartamento, hoy.plusDays(1), hoy.plusDays(3),
+                grupo, null, null, "BK-400", "Booking");
+        assertThrows(ReglaNegocioException.class, () -> alojamiento.recibirReservaExterna(muchos));
+        assertEquals(0, alojamiento.getReservas().size());
+    }
 }

@@ -1,6 +1,7 @@
 package com.jefferson.notifications.domain.model;
 
 import com.jefferson.notifications.domain.exception.RecursoNoEncontradoException;
+import com.jefferson.notifications.domain.model.reserva.ReservaExterna;
 import com.jefferson.notifications.domain.exception.ReglaNegocioException;
 import com.jefferson.notifications.domain.model.apartamento.Apartamento;
 import com.jefferson.notifications.domain.model.apartamento.Bloqueo;
@@ -164,6 +165,39 @@ public class Alojamiento {
         reserva.getFolio().agregarCargo(new Cargo(TipoCargo.ALOJAMIENTO, reserva.getValorEstancia(),
                 "Alojamiento " + reserva.calcularNoches() + " noche(s)", false));
         reservas.add(reserva);
+        return true;
+    }
+
+    public boolean recibirReservaExterna(ReservaExterna reserva) {
+        if (reserva == null) {
+            throw new ReglaNegocioException("La reserva externa es obligatoria");
+        }
+        String codigoExterno = reserva.getCodigoExterno();
+        if (codigoExterno == null || codigoExterno.isBlank()) {
+            throw new ReglaNegocioException("La reserva externa debe traer el código de la plataforma");
+        }
+        for (Reserva existente : reservas) {
+            if (existente instanceof ReservaExterna externa && codigoExterno.equals(externa.getCodigoExterno())) {
+                throw new ReglaNegocioException("La reserva externa " + codigoExterno + " ya fue recibida");
+            }
+        }
+        validarFechas(reserva.getFechaEntrada(), reserva.getFechaSalida());
+
+        for (Reserva vigente : reservasActivasDe(reserva.getApartamento())) {
+            if (vigente.seCruzaCon(reserva.getFechaEntrada(), reserva.getFechaSalida())) {
+                conflictosCanal.add(new ConflictoCanal(codigoExterno, LocalDateTime.now(),
+                        reserva.getPlataforma() + " envió " + codigoExterno + " para "
+                                + reserva.getApartamento().getCodigo() + " del " + reserva.getFechaEntrada()
+                                + " al " + reserva.getFechaSalida() + ", que choca con la reserva "
+                                + vigente.getCodigo(),
+                        vigente));
+                throw new ReglaNegocioException("La reserva externa " + codigoExterno
+                        + " choca con la reserva " + vigente.getCodigo() + " y se registró como conflicto de canal");
+            }
+        }
+
+        crearReserva(reserva);
+        cambiarEstado(reserva, EstadoReserva.CONFIRMADA);
         return true;
     }
 
