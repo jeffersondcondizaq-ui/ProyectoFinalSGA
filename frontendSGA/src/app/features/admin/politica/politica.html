@@ -1,5 +1,72 @@
-<app-en-construccion
-  titulo="Política de cancelación"
-  descripcion="Días, horas y porcentaje de retención."
-  tarjeta="[FE] Admin: temporadas, política y empleados"
-/>
+<h1>Política de cancelación</h1>
+
+@if (cargada()) {
+<div class="columnas">
+  <mat-card appearance="outlined">
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="guardar()">
+        <mat-form-field appearance="outline">
+          <mat-label>Devolución total con al menos</mat-label>
+          <input matInput type="number" min="1" formControlName="diasDevolucionTotal" />
+          <span matTextSuffix>&nbsp;días de antelación</span>
+          @if (form.controls.diasDevolucionTotal.invalid) {
+          <mat-error>Mínimo 1 día</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Retención total con menos de</mat-label>
+          <input matInput type="number" min="1" formControlName="horasRetencionTotal" />
+          <span matTextSuffix>&nbsp;horas</span>
+          @if (form.controls.horasRetencionTotal.invalid) {
+          <mat-error>Mínimo 1 hora</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Retención en el rango intermedio</mat-label>
+          <input matInput type="number" min="0" max="100" formControlName="porcentajeRetencionParcial" />
+          <span matTextSuffix>&nbsp;%</span>
+          @if (form.controls.porcentajeRetencionParcial.invalid) {
+          <mat-error>Entre 0 y 100</mat-error>
+          }
+        </mat-form-field>
+        @if (form.hasError('rangoInvalido')) {
+        <p class="error">Las horas de retención total deben ser menos que los días de devolución total.</p>
+        }
+        <button matButton="filled" type="submit" [disabled]="guardando() || form.pristine">
+          Guardar
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Así lo leería un huésped; el cálculo real de cada devolución lo hace el backend. -->
+  <mat-card appearance="outlined" class="resumen">
+    <mat-card-header>
+      <mat-card-title>Cómo queda la política</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <ul>
+        <li>
+          Con <strong>{{ valores().diasDevolucionTotal }} días</strong> o más de antelación: se
+          devuelve <strong>todo</strong> lo pagado.
+        </li>
+        <li>
+          Entre <strong>{{ valores().horasRetencionTotal }} horas</strong> y
+          {{ valores().diasDevolucionTotal }} días: se retiene el
+          <strong>{{ valores().porcentajeRetencionParcial }} %</strong> del valor de la estancia.
+        </li>
+        <li>
+          Con menos de {{ valores().horasRetencionTotal }} horas, o en caso de no-show: se retiene
+          el <strong>100 %</strong>.
+        </li>
+      </ul>
+      <p class="nota">
+        La política queda guardada en cada reserva al crearla: un cambio aquí solo aplica a las
+        reservas nuevas.
+      </p>
+    </mat-card-content>
+  </mat-card>
+</div>
+} @else {
+<p>Cargando política...</p>
+}
