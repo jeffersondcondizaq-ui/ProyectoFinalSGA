@@ -1,0 +1,49 @@
+.volver {
+  margin-bottom: 8px;
+}
+
+.titulo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  h1 {
+    margin: 0;
+  }
+}
+
+.secundario {
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.confirmar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+
+  span {
+    flex: 1;
+  }
+}
+
+.formularios {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  button[type='submit'] {
+    align-self: flex-end;
+  }
+}

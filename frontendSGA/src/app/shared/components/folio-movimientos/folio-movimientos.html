@@ -40,9 +40,20 @@
     <td mat-footer-cell *matFooterCellDef class="numero">{{ folio().totalPagos | cop }}</td>
   </ng-container>
 
-  <tr mat-header-row *matHeaderRowDef="columnas"></tr>
-  <tr mat-row *matRowDef="let fila; columns: columnas" [class.correccion]="fila.esCorreccion"></tr>
-  <tr mat-footer-row *matFooterRowDef="columnas"></tr>
+  <!-- Solo en recepción: un movimiento nunca se edita; se corrige con uno contrario. -->
+  <ng-container matColumnDef="acciones">
+    <th mat-header-cell *matHeaderCellDef></th>
+    <td mat-cell *matCellDef="let m" class="numero">
+      @if (!m.esCorreccion) {
+      <button matButton type="button" (click)="corregir.emit(m)">Corregir</button>
+      }
+    </td>
+    <td mat-footer-cell *matFooterCellDef></td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="columnas()"></tr>
+  <tr mat-row *matRowDef="let fila; columns: columnas()" [class.correccion]="fila.esCorreccion"></tr>
+  <tr mat-footer-row *matFooterRowDef="columnas()"></tr>
 </table>
 
 <p class="saldo" [class.pendiente]="folio().saldo > 0">

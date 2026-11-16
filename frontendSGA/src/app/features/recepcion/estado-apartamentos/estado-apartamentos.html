@@ -1,5 +1,86 @@
-<app-en-construccion
-  titulo="Estado de apartamentos"
-  descripcion="Cambiar el estado operativo y registrar novedades (daños, faltantes)."
-  tarjeta="[FE] Recepción: operación diaria"
-/>
+<h1>Estado de apartamentos</h1>
+
+@if (apartamentos(); as lista) {
+<div class="grid">
+  @for (a of lista; track a.codigo) {
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>{{ a.codigo }} · {{ a.nombre }}</mat-card-title>
+      <mat-card-subtitle>Hasta {{ a.capacidadMaxima }} personas</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <app-estado-apartamento [estado]="a.estado" />
+      @if (a.estado === 'FUERA_DE_SERVICIO' && a.motivoFueraServicio) {
+      <p class="motivo">Motivo: {{ a.motivoFueraServicio }}</p>
+      }
+
+      @if (edicion()?.codigo === a.codigo) {
+      @if (edicion()?.modo === 'estado') {
+      <form [formGroup]="estadoForm" (ngSubmit)="guardarEstado(a)" class="formulario">
+        <mat-form-field appearance="outline">
+          <mat-label>Nuevo estado</mat-label>
+          <mat-select formControlName="estado">
+            @for (e of opciones(a.estado); track e) {
+            <mat-option [value]="e">{{ etiquetas[e] }}</mat-option>
+            }
+          </mat-select>
+          @if (estadoForm.controls.estado.hasError('required')) {
+          <mat-error>Elige el estado</mat-error>
+          }
+        </mat-form-field>
+        @if (estadoForm.controls.estado.value === 'FUERA_DE_SERVICIO') {
+        <mat-form-field appearance="outline">
+          <mat-label>Motivo</mat-label>
+          <textarea matInput formControlName="motivo" rows="2"></textarea>
+          @if (estadoForm.controls.motivo.hasError('required')) {
+          <mat-error>El motivo es obligatorio</mat-error>
+          }
+        </mat-form-field>
+        }
+        <div class="botones">
+          <button matButton type="button" (click)="edicion.set(null)">Cancelar</button>
+          <button matButton="filled" type="submit" [disabled]="guardando()">Guardar</button>
+        </div>
+      </form>
+      } @else {
+      <form [formGroup]="novedadForm" (ngSubmit)="guardarNovedad(a)" class="formulario">
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="tipo">
+            @for (t of tiposNovedad; track t.valor) {
+            <mat-option [value]="t.valor">{{ t.etiqueta }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput formControlName="descripcion" rows="2"></textarea>
+          @if (novedadForm.controls.descripcion.hasError('required')) {
+          <mat-error>Describe la novedad</mat-error>
+          }
+        </mat-form-field>
+        <div class="botones">
+          <button matButton type="button" (click)="edicion.set(null)">Cancelar</button>
+          <button matButton="filled" type="submit" [disabled]="guardando()">Registrar</button>
+        </div>
+      </form>
+      }
+      }
+    </mat-card-content>
+    @if (edicion()?.codigo !== a.codigo) {
+    <mat-card-actions align="end">
+      <button matButton (click)="editar(a, 'novedad')">
+        <mat-icon>report</mat-icon>
+        Novedad
+      </button>
+      <button matButton="outlined" (click)="editar(a, 'estado')" [disabled]="a.estado === 'OCUPADO'">
+        Cambiar estado
+      </button>
+    </mat-card-actions>
+    }
+  </mat-card>
+  }
+</div>
+} @else {
+<p>Cargando apartamentos...</p>
+}

@@ -1,0 +1,23 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.motivo {
+  margin: 8px 0 0;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-error);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+}
+
+.botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

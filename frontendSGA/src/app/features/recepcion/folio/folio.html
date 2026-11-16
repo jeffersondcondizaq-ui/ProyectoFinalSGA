@@ -1,5 +1,110 @@
-<app-en-construccion
-  titulo="Folio de la reserva"
-  descripcion="Registrar pagos, cargos por servicios adicionales y correcciones."
-  tarjeta="[FE] Recepción: operación diaria"
-/>
+<a matButton routerLink="/recepcion/hoy" class="volver">
+  <mat-icon>arrow_back</mat-icon>
+  Operación del día
+</a>
+
+@if (reserva(); as r) {
+<div class="titulo">
+  <h1>Folio · {{ r.codigo }}</h1>
+  <app-estado-reserva [estado]="r.estado" />
+</div>
+<p class="secundario">
+  {{ r.nombreTitular }} · {{ r.codigoApartamento }} · {{ r.fechaEntrada }} → {{ r.fechaSalida }}
+</p>
+
+<mat-card appearance="outlined">
+  <mat-card-content>
+    @if (folio(); as f) {
+    <app-folio-movimientos [folio]="f" [corregible]="activa()" (corregir)="aCorregir.set($event)" />
+    } @else {
+    <p>Cargando folio...</p>
+    }
+
+    @if (aCorregir(); as m) {
+    <div class="confirmar">
+          <span>
+            Se registrará un movimiento contrario por {{ -m.valor | cop }} a
+            "{{ m.descripcion }}". El original no se modifica.
+          </span>
+      <button matButton (click)="aCorregir.set(null)">Cancelar</button>
+      <button matButton="filled" (click)="confirmarCorreccion()" [disabled]="guardando()">
+        Registrar corrección
+      </button>
+    </div>
+    }
+  </mat-card-content>
+</mat-card>
+
+@if (activa()) {
+<div class="formularios">
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Registrar pago</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="pago" (ngSubmit)="registrarPago()">
+        <mat-form-field appearance="outline">
+          <mat-label>Medio</mat-label>
+          <mat-select formControlName="medio">
+            @for (m of medios; track m.valor) {
+            <mat-option [value]="m.valor">{{ m.etiqueta }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Valor</mat-label>
+          <span matTextPrefix>$&nbsp;</span>
+          <input matInput type="number" min="1" formControlName="valor" />
+          @if (pago.controls.valor.invalid) {
+          <mat-error>Escribe un valor mayor que cero</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Descripción (opcional)</mat-label>
+          <input matInput formControlName="descripcion" placeholder="Abono, pago del saldo..." />
+        </mat-form-field>
+        <button matButton="filled" type="submit" [disabled]="guardando()">Registrar pago</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <mat-card-title>Registrar cargo</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form [formGroup]="cargo" (ngSubmit)="registrarCargo()">
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="tipo">
+            @for (t of tiposCargo; track t.valor) {
+            <mat-option [value]="t.valor">{{ t.etiqueta }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Descripción</mat-label>
+          <input matInput formControlName="descripcion" placeholder="Desayuno, lavandería..." />
+          @if (cargo.controls.descripcion.hasError('required')) {
+          <mat-error>Describe el cargo</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Valor</mat-label>
+          <span matTextPrefix>$&nbsp;</span>
+          <input matInput type="number" min="1" formControlName="valor" />
+          @if (cargo.controls.valor.invalid) {
+          <mat-error>Escribe un valor mayor que cero</mat-error>
+          }
+        </mat-form-field>
+        <button matButton="filled" type="submit" [disabled]="guardando()">Registrar cargo</button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>
+} @else {
+<p class="secundario">La reserva ya no está activa: el folio es de solo lectura.</p>
+}
+} @else {
+<p>Cargando reserva...</p>
+}

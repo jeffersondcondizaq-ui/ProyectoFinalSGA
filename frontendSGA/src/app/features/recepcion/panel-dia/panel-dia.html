@@ -1,5 +1,100 @@
-<app-en-construccion
-  titulo="Operación del día"
-  descripcion="Llegadas y salidas de hoy, confirmar pendientes, check-in, check-out y no-show."
-  tarjeta="[FE] Recepción: operación diaria"
-/>
+<div class="titulo">
+  <h1>Operación del día</h1>
+  <mat-form-field appearance="outline" class="fecha" subscriptSizing="dynamic">
+    <mat-label>Día</mat-label>
+    <input matInput [matDatepicker]="picker" [formControl]="fecha" />
+    <mat-datepicker-toggle matIconSuffix [for]="picker" />
+    <mat-datepicker #picker />
+  </mat-form-field>
+</div>
+
+@if (cargando()) {
+<p>Cargando reservas...</p>
+} @else {
+<div class="paneles">
+  <section>
+    <h2><mat-icon>login</mat-icon> Llegadas ({{ llegadas().length }})</h2>
+    @for (r of llegadas(); track r.codigo) {
+    <ng-container [ngTemplateOutlet]="fila" [ngTemplateOutletContext]="{ $implicit: r }" />
+    } @empty {
+    <p class="vacio">No hay llegadas ese día.</p>
+    }
+  </section>
+
+  <section>
+    <h2><mat-icon>logout</mat-icon> Salidas ({{ salidas().length }})</h2>
+    @for (r of salidas(); track r.codigo) {
+    <ng-container [ngTemplateOutlet]="fila" [ngTemplateOutletContext]="{ $implicit: r }" />
+    } @empty {
+    <p class="vacio">No hay salidas ese día.</p>
+    }
+  </section>
+
+  <section>
+    <h2><mat-icon>hourglass_top</mat-icon> Pendientes por confirmar ({{ pendientes().length }})</h2>
+    @for (r of pendientes(); track r.codigo) {
+    <ng-container [ngTemplateOutlet]="fila" [ngTemplateOutletContext]="{ $implicit: r }" />
+    } @empty {
+    <p class="vacio">No hay reservas pendientes.</p>
+    }
+  </section>
+
+  <section>
+    <h2><mat-icon>hotel</mat-icon> Hospedados ahora ({{ hospedados().length }})</h2>
+    @for (r of hospedados(); track r.codigo) {
+    <ng-container [ngTemplateOutlet]="fila" [ngTemplateOutletContext]="{ $implicit: r }" />
+    } @empty {
+    <p class="vacio">No hay grupos hospedados.</p>
+    }
+  </section>
+</div>
+}
+
+<!-- Una reserva con las acciones que aplican según su estado. -->
+<ng-template #fila let-r>
+  <mat-card appearance="outlined" class="reserva">
+    <div class="encabezado">
+      <strong>{{ r.codigo }}</strong>
+      <app-estado-reserva [estado]="r.estado" />
+    </div>
+    <p>
+      {{ r.nombreTitular }} · {{ r.codigoApartamento }} · {{ r.ocupantes.length }} personas
+    </p>
+    <p class="secundario">
+      {{ r.fechaEntrada }} → {{ r.fechaSalida }} · Saldo:
+      <span [class.deuda]="r.saldo > 0">{{ r.saldo | cop }}</span>
+    </p>
+
+    @if (confirmandoNoShow() === r.codigo) {
+    <div class="confirmar">
+      <span>¿Declarar no-show? Es definitivo y se retiene lo pagado.</span>
+      <button matButton (click)="confirmandoNoShow.set(null)">No</button>
+      <button matButton="filled" class="peligro" (click)="ejecutar('noShow', r)">Sí</button>
+    </div>
+    } @else {
+    <div class="acciones">
+      <a matButton [routerLink]="['/recepcion/folio', r.codigo]">Folio</a>
+      @switch (r.estado) {
+      @case ('PENDIENTE') {
+      <button matButton="filled" [disabled]="procesando() === r.codigo" (click)="ejecutar('confirmar', r)">
+        Confirmar
+      </button>
+      }
+      @case ('CONFIRMADA') {
+      <button matButton class="peligro-texto" [disabled]="procesando() === r.codigo" (click)="confirmandoNoShow.set(r.codigo)">
+        No-show
+      </button>
+      <button matButton="filled" [disabled]="procesando() === r.codigo" (click)="ejecutar('checkIn', r)">
+        Check-in
+      </button>
+      }
+      @case ('EN_CURSO') {
+      <button matButton="filled" [disabled]="procesando() === r.codigo" (click)="ejecutar('checkOut', r)">
+        Check-out
+      </button>
+      }
+      }
+    </div>
+    }
+  </mat-card>
+</ng-template>
