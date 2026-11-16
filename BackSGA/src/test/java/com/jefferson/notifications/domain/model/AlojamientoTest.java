@@ -10,6 +10,9 @@ import com.jefferson.notifications.domain.model.apartamento.Bloqueo;
 import com.jefferson.notifications.domain.model.reserva.EstadoReserva;
 import com.jefferson.notifications.domain.model.reserva.ReservaExterna;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import com.jefferson.notifications.domain.model.apartamento.TipoTemporada;
+import com.jefferson.notifications.domain.model.configuracion.PeriodoTemporada;
+import com.jefferson.notifications.domain.model.reserva.DetalleNoche;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -175,5 +178,100 @@ class AlojamientoTest {
     void consultarDisponiblesValidaLasFechas() {
         assertThrows(ReglaNegocioException.class,
                 () -> alojamiento.consultarDisponibles(hoy.plusDays(4), hoy.plusDays(2), 2));
+    }
+
+    // ---------------- Regla: cálculo del valor noche por noche ----------------
+
+    /** Tarifas por persona y noche: Baja 100.000, Media 150.000, Alta 200.000. */
+    private void definirTarifas() {
+        apartamento.definirTarifa(TipoTemporada.BAJA, 100_000);
+        apartamento.definirTarifa(TipoTemporada.MEDIA, 150_000);
+        apartamento.definirTarifa(TipoTemporada.ALTA, 200_000);
+    }
+
+    private long total(ArrayList<DetalleNoche> detalle) {
+        long suma = 0;
+        for (DetalleNoche noche : detalle) {
+            suma += noche.calcularSubtotal();
+        }
+        return suma;
+    }
+
+    @Test
+    void cotizaUnaNochePorCadaNocheDeLaEstancia() {
+        definirTarifas();
+        ArrayList<DetalleNoche> detalle = alojamiento.cotizar("APT-101", hoy.plusDays(1), hoy.plusDays(4), ocupantes(2));
+        assertEquals(3, detalle.size());
+        assertEquals(hoy.plusDays(1), detalle.get(0).getFecha());
+        assertEquals(hoy.plusDays(3), detalle.get(2).getFecha());
+        // 3 noches en Baja x 2 personas x 100.000
+        assertEquals(600_000, total(detalle));
+    }
+
+    @Test
+    void unaEstanciaPuedeCruzarTemporadas() {
+        definirTarifas();
+        // Las noches 3 y 4 son temporada Alta
+        alojamiento.registrarPeriodoTemporada(new PeriodoTemporada(TipoTemporada.ALTA,
+                hoy.plusDays(3), hoy.plusDays(5), "Puente festivo"));
+        ArrayList<DetalleNoche> detalle = alojamiento.cotizar("APT-101", hoy.plusDays(1), hoy.plusDays(6), ocupantes(1));
+
+        assertEquals(TipoTemporada.BAJA, detalle.get(1).getTemporada()); // noche 2
+        assertEquals(TipoTemporada.ALTA, detalle.get(2).getTemporada()); // noche 3
+        assertEquals(TipoTemporada.ALTA, detalle.get(3).getTemporada()); // noche 4
+        assertEquals(TipoTemporada.BAJA, detalle.get(4).getTemporada()); // noche 5
+        // 3 noches Baja (300.000) + 2 noches Alta (400.000)
+        assertEquals(700_000, total(detalle));
+    }
+
+    @Test
+    void losMenoresDeSeisAniosNoPagan() {
+        definirTarifas();
+        ArrayList<Ocupante> grupo = ocupantes(1);
+        grupo.add(new Ocupante("Niña de 3", hoy.minusYears(3)));
+        ArrayList<DetalleNoche> detalle = alojamiento.cotizar("APT-101", hoy.plusDays(1), hoy.plusDays(3), grupo);
+        assertEquals(1, detalle.get(0).getPagadores());
+        assertEquals(200_000, total(detalle));
+    }
+
+    @Test
+    void laEdadSeCalculaALaFechaDeEntrada() {
+        definirTarifas();
+        LocalDate entrada = hoy.plusDays(10);
+        ArrayList<Ocupante> grupo = new ArrayList<>();
+        grupo.add(new Ocupante("Cumple 6 justo al llegar", entrada.minusYears(6)));
+        grupo.add(new Ocupante("Cumple 6 al día siguiente", entrada.minusYears(6).plusDays(1)));
+        ArrayList<DetalleNoche> detalle = alojamiento.cotizar("APT-101", entrada, entrada.plusDays(1), grupo);
+        assertEquals(1, detalle.get(0).getPagadores());
+    }
+
+    @Test
+    void laReservaGuardaElValorDeLaCotizacion() {
+        definirTarifas();
+        ArrayList<Ocupante> grupo = ocupantes(2);
+        ArrayList<DetalleNoche> detalle = alojamiento.cotizar("APT-101", hoy.plusDays(1), hoy.plusDays(3), grupo);
+        ReservaDirecta nueva = new ReservaDirecta("R-1", laura, apartamento, hoy.plusDays(1), hoy.plusDays(3),
+                grupo, detalle, alojamiento.getPoliticaCancelacion());
+        alojamiento.crearReserva(nueva);
+        assertEquals(400_000, nueva.getValorEstancia());
+    }
+
+    @Test
+    void noCotizaSiFaltaLaTarifaDeLaTemporada() {
+        apartamento.definirTarifa(TipoTemporada.BAJA, 100_000); // sin tarifa Alta
+        alojamiento.registrarPeriodoTemporada(new PeriodoTemporada(TipoTemporada.ALTA,
+                hoy.plusDays(2), hoy.plusDays(3), "Puente festivo"));
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.cotizar("APT-101", hoy.plusDays(1), hoy.plusDays(3), ocupantes(1)));
+        assertEquals("El apartamento APT-101 no tiene tarifa definida para temporada ALTA", error.getMessage());
+    }
+
+    @Test
+    void cotizarAplicaLasReglasDeFechasYCapacidad() {
+        definirTarifas();
+        assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.cotizar("APT-101", hoy.plusDays(3), hoy.plusDays(1), ocupantes(1)));
+        assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.cotizar("APT-101", hoy.plusDays(1), hoy.plusDays(3), ocupantes(3)));
     }
 }

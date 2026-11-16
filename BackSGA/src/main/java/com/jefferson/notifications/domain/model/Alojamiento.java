@@ -13,6 +13,8 @@ import com.jefferson.notifications.domain.model.persona.Usuario;
 import com.jefferson.notifications.domain.model.reserva.ConflictoCanal;
 import com.jefferson.notifications.domain.model.reserva.Reserva;
 import com.jefferson.notifications.domain.model.apartamento.EstadoApartamento;
+import com.jefferson.notifications.domain.model.persona.Ocupante;
+import com.jefferson.notifications.domain.model.reserva.DetalleNoche;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -276,6 +278,40 @@ public class Alojamiento {
             throw new ReglaNegocioException("La política es obligatoria");
         }
         this.politicaCancelacion = politica;
+    }
+
+    /**
+     * Regla "valor noche por noche"
+     */
+    public ArrayList<DetalleNoche> cotizar(String codigoApto, LocalDate entrada, LocalDate salida,
+                                           ArrayList<Ocupante> ocupantes) {
+        Apartamento apto = buscarApartamento(codigoApto);
+        validarFechas(entrada, salida);
+        if (ocupantes == null) {
+            ocupantes = new ArrayList<>();
+        }
+        validarCapacidad(apto, ocupantes.size());
+
+        int pagadores = 0;
+        for (Ocupante ocupante : ocupantes) {
+            if (ocupante.esPagador(entrada)) {
+                pagadores++;
+            }
+        }
+
+        ArrayList<DetalleNoche> detalle = new ArrayList<>();
+        LocalDate noche = entrada;
+        while (noche.isBefore(salida)) {
+            TipoTemporada temporada = obtenerTemporada(noche);
+            long tarifa = apto.getTarifa(temporada);
+            if (tarifa <= 0) {
+                throw new ReglaNegocioException("El apartamento " + apto.getCodigo()
+                        + " no tiene tarifa definida para temporada " + temporada);
+            }
+            detalle.add(new DetalleNoche(noche, temporada, tarifa, pagadores));
+            noche = noche.plusDays(1);
+        }
+        return detalle;
     }
 
     public Reserva buscarReserva(String codigo) {
