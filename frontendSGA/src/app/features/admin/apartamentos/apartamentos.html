@@ -1,5 +1,240 @@
-<app-en-construccion
-  titulo="Apartamentos"
-  descripcion="Crear, editar y eliminar lógicamente apartamentos; tarifas por temporada y bloqueos."
-  tarjeta="[FE] Admin: apartamentos, tarifas y bloqueos"
-/>
+<div class="titulo">
+  <h1>Apartamentos</h1>
+  <button matButton="filled" (click)="nuevo()">
+    <mat-icon>add</mat-icon>
+    Nuevo apartamento
+  </button>
+</div>
+
+<!-- Panel de la acción en curso: crear/editar, bloquear o eliminar -->
+@if (panel(); as p) {
+<mat-card appearance="outlined" class="panel">
+  <mat-card-content>
+    @if (p.modo === 'eliminar') {
+    <h2>¿Eliminar {{ p.apartamento.codigo }} · {{ p.apartamento.nombre }}?</h2>
+    <p>
+      Es una eliminación lógica: deja de venderse, pero sus reservas e historial se conservan.
+      El sistema la rechaza si el apartamento tiene reservas activas.
+    </p>
+    <div class="botones">
+      <button matButton (click)="panel.set(null)">Cancelar</button>
+      <button
+        matButton="filled"
+        class="peligro"
+        [disabled]="guardando()"
+        (click)="eliminar(p.apartamento)"
+      >
+        Eliminar
+      </button>
+    </div>
+    } @else if (p.modo === 'bloqueo') {
+    <h2>Bloqueos de {{ p.apartamento.codigo }} · {{ p.apartamento.nombre }}</h2>
+    @if (p.apartamento.bloqueos?.length) {
+    <ul class="bloqueos">
+      @for (b of p.apartamento.bloqueos; track $index) {
+      <li>
+        {{ b.fechaInicio }} → {{ b.fechaFin }} · <span>{{ b.motivo }}</span>
+      </li>
+      }
+    </ul>
+    } @else {
+    <p class="secundario">No tiene bloqueos registrados.</p>
+    }
+    <form [formGroup]="bloqueo" (ngSubmit)="guardarBloqueo(p.apartamento)" class="fila">
+      <mat-form-field appearance="outline">
+        <mat-label>Fechas bloqueadas</mat-label>
+        <mat-date-range-input [rangePicker]="rango" [min]="hoy">
+          <input matStartDate formControlName="fechaInicio" placeholder="Desde" />
+          <input matEndDate formControlName="fechaFin" placeholder="Hasta" />
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="rango" />
+        <mat-date-range-picker #rango />
+        @if (bloqueo.controls.fechaInicio.touched && bloqueo.controls.fechaInicio.invalid) {
+        <mat-error>Elige el rango de fechas</mat-error>
+        }
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Motivo</mat-label>
+        <input matInput formControlName="motivo" placeholder="Mantenimiento, uso propio..." />
+        @if (bloqueo.controls.motivo.hasError('required')) {
+        <mat-error>El motivo es obligatorio</mat-error>
+        }
+      </mat-form-field>
+      <div class="botones">
+        <button matButton type="button" (click)="panel.set(null)">Cerrar</button>
+        <button matButton="filled" type="submit" [disabled]="guardando()">
+          Registrar bloqueo
+        </button>
+      </div>
+    </form>
+    } @else {
+    <h2>{{ p.modo === 'nuevo' ? 'Nuevo apartamento' : 'Editar apartamento' }}</h2>
+    <form [formGroup]="form" (ngSubmit)="guardar()">
+      <div class="fila">
+        <mat-form-field appearance="outline">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="codigo" placeholder="APT-301" />
+          @if (form.controls.codigo.hasError('required')) {
+          <mat-error>Escribe el código</mat-error>
+          } @else if (form.controls.codigo.hasError('pattern')) {
+          <mat-error>Formato APT-000</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" />
+          @if (form.controls.nombre.hasError('required')) {
+          <mat-error>Escribe el nombre</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Dormitorios</mat-label>
+          <input matInput type="number" min="1" formControlName="numDormitorios" />
+          @if (form.controls.numDormitorios.invalid) {
+          <mat-error>Mínimo 1</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Capacidad máxima</mat-label>
+          <input matInput type="number" min="1" formControlName="capacidadMaxima" />
+          <mat-hint>Personas, incluidos niños</mat-hint>
+          @if (form.controls.capacidadMaxima.invalid) {
+          <mat-error>Mínimo 1</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="ancho">
+        <mat-label>Características</mat-label>
+        <mat-chip-grid #chips aria-label="Características">
+          @for (c of caracteristicas(); track c) {
+          <mat-chip-row (removed)="quitarCaracteristica(c)">
+            {{ c }}
+            <button matChipRemove [attr.aria-label]="'Quitar ' + c">
+              <mat-icon>cancel</mat-icon>
+            </button>
+          </mat-chip-row>
+          }
+        </mat-chip-grid>
+        <input
+          placeholder="Escribe una y presiona Enter"
+          [matChipInputFor]="chips"
+          (matChipInputTokenEnd)="agregarCaracteristica($event)"
+        />
+      </mat-form-field>
+
+      <h3>Tarifa por persona por noche</h3>
+      <div class="fila">
+        <mat-form-field appearance="outline">
+          <mat-label>Temporada baja</mat-label>
+          <span matTextPrefix>$&nbsp;</span>
+          <input matInput type="number" min="1" formControlName="baja" />
+          @if (form.controls.baja.invalid) {
+          <mat-error>Valor mayor que cero</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Temporada media</mat-label>
+          <span matTextPrefix>$&nbsp;</span>
+          <input matInput type="number" min="1" formControlName="media" />
+          @if (form.controls.media.invalid) {
+          <mat-error>Valor mayor que cero</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Temporada alta</mat-label>
+          <span matTextPrefix>$&nbsp;</span>
+          <input matInput type="number" min="1" formControlName="alta" />
+          @if (form.controls.alta.invalid) {
+          <mat-error>Valor mayor que cero</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      @if (p.modo === 'editar') {
+      <p class="secundario">
+        Cambiar las tarifas no afecta las reservas ya creadas: su valor queda congelado.
+      </p>
+      }
+
+      <div class="botones">
+        <button matButton type="button" (click)="panel.set(null)">Cancelar</button>
+        <button matButton="filled" type="submit" [disabled]="guardando()">Guardar</button>
+      </div>
+    </form>
+    }
+  </mat-card-content>
+</mat-card>
+}
+
+<mat-slide-toggle
+  [checked]="mostrarEliminados()"
+  (change)="mostrarEliminados.set($event.checked)"
+  class="toggle"
+>
+  Mostrar eliminados
+</mat-slide-toggle>
+
+@if (apartamentos()) {
+<mat-card appearance="outlined" class="tabla">
+  <table mat-table [dataSource]="visibles()">
+    <ng-container matColumnDef="codigo">
+      <th mat-header-cell *matHeaderCellDef>Código</th>
+      <td mat-cell *matCellDef="let a">{{ a.codigo }}</td>
+    </ng-container>
+    <ng-container matColumnDef="nombre">
+      <th mat-header-cell *matHeaderCellDef>Nombre</th>
+      <td mat-cell *matCellDef="let a">
+        {{ a.nombre }}
+        <span class="secundario">{{ a.caracteristicas.join(' · ') }}</span>
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="capacidad">
+      <th mat-header-cell *matHeaderCellDef>Capacidad</th>
+      <td mat-cell *matCellDef="let a">
+        {{ a.numDormitorios }} dorm. · {{ a.capacidadMaxima }} pers.
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="tarifas">
+      <th mat-header-cell *matHeaderCellDef>Baja / Media / Alta</th>
+      <td mat-cell *matCellDef="let a" class="tarifas">
+        {{ tarifa(a, 'BAJA') | cop }} · {{ tarifa(a, 'MEDIA') | cop }} ·
+        {{ tarifa(a, 'ALTA') | cop }}
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="estado">
+      <th mat-header-cell *matHeaderCellDef>Estado</th>
+      <td mat-cell *matCellDef="let a">
+        @if (a.activo) {
+        <app-estado-apartamento [estado]="a.estado" />
+        } @else {
+        <span class="eliminado">Eliminado</span>
+        }
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="acciones">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let a" class="acciones">
+        @if (a.activo) {
+        <button matIconButton matTooltip="Editar" (click)="editar(a)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button matIconButton matTooltip="Bloqueos" (click)="bloquear(a)">
+          <mat-icon>event_busy</mat-icon>
+        </button>
+        <button
+          matIconButton
+          matTooltip="Eliminar"
+          (click)="panel.set({ modo: 'eliminar', apartamento: a })"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+        }
+      </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+    <tr mat-row *matRowDef="let fila; columns: columnas" [class.inactivo]="!fila.activo"></tr>
+  </table>
+</mat-card>
+} @else {
+<p>Cargando apartamentos...</p>
+}
