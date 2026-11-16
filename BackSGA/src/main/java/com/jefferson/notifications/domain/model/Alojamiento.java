@@ -17,11 +17,16 @@ import com.jefferson.notifications.domain.model.persona.Ocupante;
 import com.jefferson.notifications.domain.model.reserva.DetalleNoche;
 import com.jefferson.notifications.domain.model.reserva.EstadoReserva;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class Alojamiento {
+    public static final LocalTime HORA_ENTRADA = LocalTime.of(15, 0);
+    public static final LocalTime HORA_SALIDA = LocalTime.of(11, 0);
+    public static final int HORAS_MINIMAS_PREPARACION = 3;
+    public static final LocalTime HORA_LIMITE_LLEGADA = LocalTime.of(22, 0);
 
     private String nombre;
     private String ubicacion;
@@ -354,6 +359,67 @@ public class Alojamiento {
             }
         }
         return canceladas;
+    }
+
+    /**
+     * Registro de llegada: la reserva debe estar Confirmada, ya debe ser la fecha de entrada
+     * (desde las 3:00 p. m.)
+     */
+    public boolean hacerCheckIn(String codigo, LocalDateTime ahora) {
+        Reserva reserva = buscarReserva(codigo);
+        if (reserva.getEstado() != EstadoReserva.CONFIRMADA) {
+            throw new ReglaNegocioException("Solo se puede hacer check-in de una reserva Confirmada (la reserva "
+                    + codigo + " está " + reserva.getEstado() + ")");
+        }
+        LocalDateTime desde = reserva.getFechaEntrada().atTime(HORA_ENTRADA);
+        if (ahora.isBefore(desde)) {
+            throw new ReglaNegocioException("El check-in de la reserva " + codigo + " es desde el "
+                    + reserva.getFechaEntrada() + " a las 3:00 p. m.");
+        }
+        if (!ahora.toLocalDate().isBefore(reserva.getFechaSalida())) {
+            throw new ReglaNegocioException("La estancia de la reserva " + codigo + " ya terminó");
+        }
+        Apartamento apto = reserva.getApartamento();
+        if (apto.getEstado() != EstadoApartamento.PREPARADO) {
+            throw new ReglaNegocioException("El apartamento " + apto.getCodigo()
+                    + " no está Preparado (estado actual: " + apto.getEstado() + ")");
+        }
+        cambiarEstado(reserva, EstadoReserva.EN_CURSO);
+        apto.cambiarEstado(EstadoApartamento.OCUPADO, null);
+        return true;
+    }
+
+    /**
+     * Salida: la reserva pasa de En curso a Finalizada y el apartamento queda
+     * Pendiente de preparación.
+     */
+    public boolean hacerCheckOut(String codigo) {
+        Reserva reserva = buscarReserva(codigo);
+        if (reserva.getEstado() != EstadoReserva.EN_CURSO) {
+            throw new ReglaNegocioException("Solo se puede hacer check-out de una reserva En curso (la reserva "
+                    + codigo + " está " + reserva.getEstado() + ")");
+        }
+        cambiarEstado(reserva, EstadoReserva.FINALIZADA);
+        reserva.getApartamento().cambiarEstado(EstadoApartamento.PENDIENTE_PREPARACION, null);
+        return true;
+    }
+
+    /**
+     * No-show: el titular de una reserva Confirmada no llegó antes de las 10:00 p. m.
+     */
+    public boolean declararNoShow(String codigo, LocalDateTime ahora) {
+        Reserva reserva = buscarReserva(codigo);
+        if (reserva.getEstado() != EstadoReserva.CONFIRMADA) {
+            throw new ReglaNegocioException("Solo se puede declarar no-show de una reserva Confirmada (la reserva "
+                    + codigo + " está " + reserva.getEstado() + ")");
+        }
+        LocalDateTime limite = reserva.getFechaEntrada().atTime(HORA_LIMITE_LLEGADA);
+        if (!ahora.isAfter(limite)) {
+            throw new ReglaNegocioException("Aún no se puede declarar no-show: el titular tiene hasta las 10:00 p. m. del "
+                    + reserva.getFechaEntrada());
+        }
+        cambiarEstado(reserva, EstadoReserva.NO_SHOW);
+        return true;
     }
 
     public Reserva buscarReserva(String codigo) {

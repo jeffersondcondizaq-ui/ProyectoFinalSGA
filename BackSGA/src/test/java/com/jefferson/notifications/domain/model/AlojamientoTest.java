@@ -350,4 +350,102 @@ class AlojamientoTest {
         alojamiento.cancelarPendientesVencidas(ahora.plusHours(25));
         assertTrue(alojamiento.estaDisponible(apartamento, hoy.plusDays(1), hoy.plusDays(3)));
     }
+    // ---------------- Regla: check-in, check-out y preparación ----------------
+
+    /** Crea y confirma una reserva que entra hoy y sale en 2 días. */
+    private ReservaDirecta confirmadaParaHoy() {
+        ReservaDirecta r = reserva("R-1", hoy, hoy.plusDays(2));
+        alojamiento.crearReserva(r);
+        alojamiento.confirmarReserva("R-1");
+        return r;
+    }
+
+    @Test
+    void elCheckInPoneLaReservaEnCursoYElApartamentoOcupado() {
+        ReservaDirecta r = confirmadaParaHoy();
+        assertTrue(alojamiento.hacerCheckIn("R-1", hoy.atTime(15, 30)));
+        assertEquals(EstadoReserva.EN_CURSO, r.getEstado());
+        assertEquals(EstadoApartamento.OCUPADO, apartamento.getEstado());
+    }
+
+    @Test
+    void noHayCheckInDeUnaReservaSinConfirmar() {
+        alojamiento.crearReserva(reserva("R-1", hoy, hoy.plusDays(2)));
+        assertThrows(ReglaNegocioException.class, () -> alojamiento.hacerCheckIn("R-1", hoy.atTime(16, 0)));
+    }
+
+    @Test
+    void noHayCheckInAntesDeLaFechaYHoraDeEntrada() {
+        alojamiento.crearReserva(reserva("R-1", hoy.plusDays(2), hoy.plusDays(4)));
+        alojamiento.confirmarReserva("R-1");
+        // Un día antes
+        assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.hacerCheckIn("R-1", hoy.plusDays(1).atTime(16, 0)));
+        // El mismo día, pero antes de las 3:00 p. m.
+        assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.hacerCheckIn("R-1", hoy.plusDays(2).atTime(14, 59)));
+        assertTrue(alojamiento.hacerCheckIn("R-1", hoy.plusDays(2).atTime(15, 0)));
+    }
+
+    @Test
+    void noHayCheckInSiElApartamentoNoEstaPreparado() {
+        confirmadaParaHoy();
+        apartamento.cambiarEstado(EstadoApartamento.EN_PREPARACION, null);
+        ReglaNegocioException error = assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.hacerCheckIn("R-1", hoy.atTime(15, 0)));
+        assertEquals("El apartamento APT-101 no está Preparado (estado actual: EN_PREPARACION)", error.getMessage());
+    }
+
+    @Test
+    void elCheckOutFinalizaLaReservaYDejaElApartamentoPendienteDePreparacion() {
+        ReservaDirecta r = confirmadaParaHoy();
+        alojamiento.hacerCheckIn("R-1", hoy.atTime(15, 0));
+        assertTrue(alojamiento.hacerCheckOut("R-1"));
+        assertEquals(EstadoReserva.FINALIZADA, r.getEstado());
+        assertEquals(EstadoApartamento.PENDIENTE_PREPARACION, apartamento.getEstado());
+    }
+
+    @Test
+    void noHayCheckOutSinCheckIn() {
+        confirmadaParaHoy();
+        assertThrows(ReglaNegocioException.class, () -> alojamiento.hacerCheckOut("R-1"));
+    }
+
+    @Test
+    void despuesDelCheckOutHayQuePrepararAntesDelSiguienteCheckIn() {
+        // Primer grupo: hoy -> mañana
+        alojamiento.crearReserva(reserva("R-1", hoy, hoy.plusDays(1)));
+        alojamiento.confirmarReserva("R-1");
+        alojamiento.hacerCheckIn("R-1", hoy.atTime(15, 0));
+        // Segundo grupo: entra mañana, el mismo día que sale el primero
+        alojamiento.crearReserva(reserva("R-2", hoy.plusDays(1), hoy.plusDays(3)));
+        alojamiento.confirmarReserva("R-2");
+
+        alojamiento.hacerCheckOut("R-1");
+        assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.hacerCheckIn("R-2", hoy.plusDays(1).atTime(15, 0)));
+
+        apartamento.cambiarEstado(EstadoApartamento.EN_PREPARACION, null);
+        apartamento.cambiarEstado(EstadoApartamento.PREPARADO, null);
+        assertTrue(alojamiento.hacerCheckIn("R-2", hoy.plusDays(1).atTime(15, 0)));
+    }
+
+    @Test
+    void declaraNoShowDespuesDeLas10DeLaNoche() {
+        ReservaDirecta r = confirmadaParaHoy();
+        assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.declararNoShow("R-1", hoy.atTime(21, 59)));
+        assertTrue(alojamiento.declararNoShow("R-1", hoy.atTime(22, 1)));
+        assertEquals(EstadoReserva.NO_SHOW, r.getEstado());
+        // El no-show libera las noches
+        assertTrue(alojamiento.estaDisponible(apartamento, hoy.plusDays(1), hoy.plusDays(2)));
+    }
+
+    @Test
+    void noHayNoShowSiElGrupoYaLlego() {
+        confirmadaParaHoy();
+        alojamiento.hacerCheckIn("R-1", hoy.atTime(15, 0));
+        assertThrows(ReglaNegocioException.class,
+                () -> alojamiento.declararNoShow("R-1", hoy.atTime(23, 0)));
+    }
 }
