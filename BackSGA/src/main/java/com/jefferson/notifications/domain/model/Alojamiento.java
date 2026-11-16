@@ -132,6 +132,21 @@ public class Alojamiento {
         return true;
     }
 
+    /**
+     * Registra una reserva nueva (de cualquier canal) después de validar las reglas.
+     * Las reglas se van sumando en cada tarjeta: por ahora fechas y capacidad.
+     */
+    public boolean crearReserva(Reserva reserva) {
+        if (reserva == null) {
+            throw new ReglaNegocioException("La reserva es obligatoria");
+        }
+        validarFechas(reserva.getFechaEntrada(), reserva.getFechaSalida());
+        validarCapacidad(reserva.getApartamento(), reserva.getOcupantes().size());
+
+        reservas.add(reserva);
+        return true;
+    }
+
     public Apartamento buscarApartamento(String codigo) {
         for (Apartamento apartamento : apartamentos) {
             if (apartamento.getCodigo().equals(codigo)) {
@@ -267,6 +282,38 @@ public class Alojamiento {
             if (empleado.getDocumento().equals(nuevo.getDocumento())) {
                 throw new ReglaNegocioException("Ya existe un empleado con documento " + nuevo.getDocumento());
             }
+        }
+    }
+
+    /**
+     * Regla "fechas válidas": la salida debe ser posterior a la entrada (mínimo una noche)
+     * y no se puede reservar con fecha de entrada anterior a hoy.
+     */
+    private void validarFechas(LocalDate entrada, LocalDate salida) {
+        if (entrada == null || salida == null) {
+            throw new ReglaNegocioException("Las fechas de entrada y salida son obligatorias");
+        }
+        if (!salida.isAfter(entrada)) {
+            throw new ReglaNegocioException("La salida debe ser posterior a la entrada (mínimo una noche)");
+        }
+        if (entrada.isBefore(LocalDate.now())) {
+            throw new ReglaNegocioException("No se puede reservar con fecha de entrada anterior a hoy");
+        }
+    }
+
+    /**
+     * Regla "capacidad máxima": cuentan todos los ocupantes, incluidos los menores que no pagan.
+     */
+    private void validarCapacidad(Apartamento apartamento, int cantidadOcupantes) {
+        if (apartamento == null) {
+            throw new ReglaNegocioException("El apartamento es obligatorio");
+        }
+        if (cantidadOcupantes <= 0) {
+            throw new ReglaNegocioException("La reserva debe tener al menos un ocupante");
+        }
+        if (!apartamento.admiteOcupantes(cantidadOcupantes)) {
+            throw new ReglaNegocioException("El apartamento " + apartamento.getCodigo() + " admite máximo "
+                    + apartamento.getCapacidadMaxima() + " personas");
         }
     }
 
