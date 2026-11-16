@@ -13,6 +13,7 @@ import com.jefferson.notifications.domain.model.reserva.ReservaExterna;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import com.jefferson.notifications.domain.model.apartamento.TipoTemporada;
 import com.jefferson.notifications.domain.model.configuracion.PeriodoTemporada;
+import com.jefferson.notifications.domain.model.reserva.Canal;
 import com.jefferson.notifications.domain.model.reserva.DetalleNoche;
 import com.jefferson.notifications.domain.model.folio.MedioPago;
 import com.jefferson.notifications.domain.model.folio.Pago;
@@ -638,5 +639,39 @@ class AlojamientoTest {
                 grupo, null, null, "BK-400", "Booking");
         assertThrows(ReglaNegocioException.class, () -> alojamiento.recibirReservaExterna(muchos));
         assertEquals(0, alojamiento.getReservas().size());
+    }
+
+    // ---------------- Reportes ----------------
+
+    @Test
+    void laOcupacionCuentaLasNochesVendidasEnElRango() {
+        alojamiento.crearReserva(reserva("R-1", hoy.plusDays(1), hoy.plusDays(4)));
+        alojamiento.confirmarReserva("R-1");
+        alojamiento.crearReserva(reserva("R-2", hoy.plusDays(5), hoy.plusDays(6))); // Pendiente: no cuenta
+        // Rango de hoy+2 a hoy+10: de R-1 entran las noches 2 y 3
+        assertEquals(2, alojamiento.reporteOcupacion(hoy.plusDays(2), hoy.plusDays(10)).get(apartamento).intValue());
+    }
+
+    @Test
+    void losIngresosSonPagosMenosDevoluciones() {
+        ReservaDirecta r = reservaPagada(10); // pagó 60.000 hoy
+        assertEquals(60_000, alojamiento.reporteIngresos(hoy, hoy));
+        alojamiento.cancelarReserva("R-1", horasAntesDeEntrar(r, 8 * 24)); // devuelve 60.000
+        assertEquals(0, alojamiento.reporteIngresos(hoy, hoy));
+    }
+
+    @Test
+    void cuentaLasReservasPorCanal() {
+        alojamiento.crearReserva(reserva("R-1", hoy.plusDays(1), hoy.plusDays(2)));
+        alojamiento.recibirReservaExterna(externa("R-2", "BK-1", hoy.plusDays(3), hoy.plusDays(4)));
+        assertEquals(1, alojamiento.reporteReservasPorCanal().get(Canal.DIRECTA).intValue());
+        assertEquals(1, alojamiento.reporteReservasPorCanal().get(Canal.EXTERNA).intValue());
+        assertEquals(0, alojamiento.reporteReservasPorCanal().get(Canal.PORTAL).intValue());
+    }
+
+    @Test
+    void losSaldosPendientesSonLasReservasQueDebenDinero() {
+        reservaPagada(10); // valor 200.000, pagó 60.000
+        assertEquals(1, alojamiento.reporteSaldosPendientes().size());
     }
 }

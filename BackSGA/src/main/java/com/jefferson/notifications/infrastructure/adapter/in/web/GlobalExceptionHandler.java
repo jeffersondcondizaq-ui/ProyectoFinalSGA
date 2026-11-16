@@ -1,5 +1,6 @@
 package com.jefferson.notifications.infrastructure.adapter.in.web;
 
+import com.jefferson.notifications.application.exception.AccesoDenegadoException;
 import com.jefferson.notifications.application.exception.NoAutorizadoException;
 import com.jefferson.notifications.domain.exception.RecursoNoEncontradoException;
 import com.jefferson.notifications.domain.exception.ReglaNegocioException;
@@ -19,7 +20,9 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
- * Convierte las excepciones en respuestas HTTP con el cuerpo { "mensaje": "..." } */
+ * Convierte las excepciones en respuestas HTTP con el cuerpo { "mensaje": "..." }:
+ * 400 datos mal enviados, 401 sin sesión, 403 sin permiso, 404 no existe, 409 regla de negocio, 500 error inesperado.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -43,6 +46,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoAutorizadoException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse noAutorizado(NoAutorizadoException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    /** 403: tiene sesión, pero su rol no le permite la operación. */
+    @ExceptionHandler(AccesoDenegadoException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse accesoDenegado(AccesoDenegadoException e) {
         return new ErrorResponse(e.getMessage());
     }
 

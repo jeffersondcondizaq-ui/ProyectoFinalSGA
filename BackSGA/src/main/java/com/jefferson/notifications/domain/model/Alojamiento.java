@@ -11,6 +11,7 @@ import com.jefferson.notifications.domain.model.configuracion.PoliticaCancelacio
 import com.jefferson.notifications.domain.model.persona.Empleado;
 import com.jefferson.notifications.domain.model.persona.Huesped;
 import com.jefferson.notifications.domain.model.persona.Usuario;
+import com.jefferson.notifications.domain.model.reserva.Canal;
 import com.jefferson.notifications.domain.model.reserva.ConflictoCanal;
 import com.jefferson.notifications.domain.model.reserva.Reserva;
 import com.jefferson.notifications.domain.model.apartamento.EstadoApartamento;
@@ -21,12 +22,16 @@ import com.jefferson.notifications.domain.model.folio.Cargo;
 import com.jefferson.notifications.domain.model.folio.Devolucion;
 import com.jefferson.notifications.domain.model.folio.Folio;
 import com.jefferson.notifications.domain.model.folio.MovimientoFolio;
+import com.jefferson.notifications.domain.model.folio.Pago;
 import com.jefferson.notifications.domain.model.folio.TipoCargo;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class Alojamiento {
     public static final LocalTime HORA_ENTRADA = LocalTime.of(15, 0);
@@ -525,6 +530,91 @@ public class Alojamiento {
         return resultado;
     }
 
+    // ------------------------------------------------------------------
+    // Reportes
+    // ------------------------------------------------------------------
+
+    /**
+     * Noches vendidas de cada apartamento en el rango [desde, hasta).
+     * Cuentan las reservas Confirmadas, En curso y Finalizadas.
+     */
+    public Map<Apartamento, Integer> reporteOcupacion(LocalDate desde, LocalDate hasta) {
+        validarRango(desde, hasta);
+        Map<Apartamento, Integer> ocupacion = new LinkedHashMap<>();
+        for (Apartamento apartamento : apartamentos) {
+            ocupacion.put(apartamento, 0);
+        }
+        for (Reserva reserva : reservas) {
+            EstadoReserva estado = reserva.getEstado();
+            if (estado != EstadoReserva.CONFIRMADA && estado != EstadoReserva.EN_CURSO
+                    && estado != EstadoReserva.FINALIZADA) {
+                continue;
+            }
+            LocalDate noche = desde;
+            while (noche.isBefore(hasta)) {
+                if (reserva.contieneNoche(noche)) {
+                    ocupacion.merge(reserva.getApartamento(), 1, Integer::sum);
+                }
+                noche = noche.plusDays(1);
+            }
+        }
+        return ocupacion;
+    }
+
+    /**
+     * Ingresos netos del periodo [desde, hasta]: pagos recibidos menos devoluciones
+     * (según la fecha de cada movimiento), menos la comisión del 15 % de las reservas
+     * externas creadas en el periodo.
+     */
+    public long reporteIngresos(LocalDate desde, LocalDate hasta) {
+        validarRango(desde, hasta);
+        long total = 0;
+        for (Reserva reserva : reservas) {
+            for (MovimientoFolio movimiento : reserva.getFolio().getMovimientos()) {
+                LocalDate dia = movimiento.getFecha().toLocalDate();
+                boolean enRango = !dia.isBefore(desde) && !dia.isAfter(hasta);
+                if (enRango && (movimiento instanceof Pago || movimiento instanceof Devolucion)) {
+                    total -= movimiento.getEfectoSaldo(); // un pago baja el saldo y es un ingreso
+                }
+            }
+            LocalDate creada = reserva.getFechaCreacion().toLocalDate();
+            if (!creada.isBefore(desde) && !creada.isAfter(hasta)) {
+                total -= reserva.calcularComision();
+            }
+        }
+        return total;
+    }
+
+    /** Cuántas reservas hay por canal, en cualquier estado (incluidas canceladas y no-show). */
+    public Map<Canal, Integer> reporteReservasPorCanal() {
+        Map<Canal, Integer> porCanal = new EnumMap<>(Canal.class);
+        for (Canal canal : Canal.values()) {
+            porCanal.put(canal, 0);
+        }
+        for (Reserva reserva : reservas) {
+            porCanal.merge(reserva.getCanal(), 1, Integer::sum);
+        }
+        return porCanal;
+    }
+
+    /** Reservas cuyo folio todavía tiene saldo a cargo del huésped. */
+    public ArrayList<Reserva> reporteSaldosPendientes() {
+        ArrayList<Reserva> pendientes = new ArrayList<>();
+        for (Reserva reserva : reservas) {
+            if (reserva.getFolio().calcularSaldo() > 0) {
+                pendientes.add(reserva);
+            }
+        }
+        return pendientes;
+    }
+
+    /** Apartamentos ordenados de más a menos novedades registradas. */
+    public ArrayList<Apartamento> reporteApartamentosConMasNovedades() {
+        ArrayList<Apartamento> ordenados = new ArrayList<>(apartamentos);
+        ordenados.sort((a, b) -> b.getNovedades().size() - a.getNovedades().size());
+        return ordenados;
+    }
+
     /** Busca un usuario (huésped o empleado) por su nombre de usuario; null si no existe. */
     private Usuario buscarUsuario(String usuario) {
         for (Huesped huesped : huespedes) {
@@ -586,6 +676,12 @@ public class Alojamiento {
         if (!apartamento.admiteOcupantes(cantidadOcupantes)) {
             throw new ReglaNegocioException("El apartamento " + apartamento.getCodigo() + " admite máximo "
                     + apartamento.getCapacidadMaxima() + " personas");
+        }
+    }
+
+    private void validarRango(LocalDate desde, LocalDate hasta) {
+        if (desde == null || hasta == null || hasta.isBefore(desde)) {
+            throw new ReglaNegocioException("El rango de fechas del reporte no es válido");
         }
     }
 
