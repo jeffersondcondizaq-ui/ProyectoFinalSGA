@@ -1,0 +1,65 @@
+.titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.panel {
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0 0 12px;
+    font: var(--mat-sys-title-medium);
+  }
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0 12px;
+}
+
+.botones {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.tabla {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}
+
+.secundario {
+  display: block;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-small);
+}
+
+.estado {
+  padding: 2px 10px;
+  border-radius: 12px;
+  font: var(--mat-sys-label-medium);
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+
+  &.inactivo {
+    background: var(--mat-sys-surface-container-high);
+    color: var(--mat-sys-on-surface-variant);
+  }
+}
+
+.acciones {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.peligro {
+  background: var(--mat-sys-error);
+  color: var(--mat-sys-on-error);
+}
