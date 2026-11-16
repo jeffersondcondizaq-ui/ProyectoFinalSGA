@@ -4,11 +4,7 @@
     "nombre": "Suite Cocora",
     "numDormitorios": 2,
     "capacidadMaxima": 4,
-    "caracteristicas": [
-      "Balcón",
-      "Vista a las montañas",
-      "Chimenea"
-    ],
+    "caracteristicas": ["Balcón", "Vista a las montañas", "Chimenea"],
     "estado": "PREPARADO",
     "activo": true,
     "tarifas": [
@@ -23,6 +19,13 @@
       {
         "tipoTemporada": "ALTA",
         "valorPersonaNoche": 130000
+      }
+    ],
+    "bloqueos": [
+      {
+        "fechaInicio": "2026-12-01",
+        "fechaFin": "2026-12-03",
+        "motivo": "Mantenimiento de la chimenea"
       }
     ]
   },

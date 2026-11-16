@@ -1,5 +1,5 @@
-{
-  "PORTAL": 4,
-  "DIRECTA": 2,
-  "EXTERNA": 1
-}
+[
+  { "canal": "PORTAL", "total": 4, "canceladas": 0, "noShow": 1 },
+  { "canal": "DIRECTA", "total": 2, "canceladas": 1, "noShow": 0 },
+  { "canal": "EXTERNA", "total": 1, "canceladas": 0, "noShow": 0 }
+]

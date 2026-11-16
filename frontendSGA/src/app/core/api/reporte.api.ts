@@ -10,7 +10,7 @@ import {
   ReservasPorCanal,
 } from '../../shared/models';
 
-/** ReporteUseCase del backend. */
+/** ReporteUseCase del backend: todos los cálculos se hacen allá; aquí solo se consultan. */
 @Injectable({ providedIn: 'root' })
 export class ReporteApi {
   private readonly http = inject(HttpClient);
@@ -32,8 +32,10 @@ export class ReporteApi {
     });
   }
 
-  reservasPorCanal(): Observable<ReservasPorCanal> {
-    return this.http.get<ReservasPorCanal>(`${this.url}/reservas-por-canal`);
+  reservasPorCanal(desde: string, hasta: string): Observable<ReservasPorCanal[]> {
+    return this.http.get<ReservasPorCanal[]>(`${this.url}/reservas-por-canal`, {
+      params: this.rango(desde, hasta),
+    });
   }
 
   saldosPendientes(): Observable<Reserva[]> {

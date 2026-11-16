@@ -19,6 +19,8 @@ export interface Novedad {
   reportadaPor?: string;
 }
 
+export type NovedadRequest = Pick<Novedad, 'tipo' | 'descripcion'>;
+
 export interface Apartamento {
   codigo: string;
   nombre: string;
@@ -29,5 +31,11 @@ export interface Apartamento {
   motivoFueraServicio?: string;
   activo: boolean;
   tarifas: Tarifa[];
+  bloqueos?: Bloqueo[];
   fotos?: string[];
 }
+
+export type ApartamentoRequest = Pick<
+  Apartamento,
+  'codigo' | 'nombre' | 'numDormitorios' | 'capacidadMaxima' | 'caracteristicas' | 'tarifas'
+>;

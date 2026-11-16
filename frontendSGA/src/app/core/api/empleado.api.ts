@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Empleado } from '../../shared/models';
+import { ContratarEmpleadoRequest, Empleado } from '../../shared/models';
 
 /** GestionEmpleadoUseCase del backend. */
 @Injectable({ providedIn: 'root' })
@@ -14,15 +14,18 @@ export class EmpleadoApi {
     return this.http.get<Empleado[]>(this.url);
   }
 
-  contratar(empleado: Empleado & { contrasena: string }): Observable<Empleado> {
+  contratar(empleado: ContratarEmpleadoRequest): Observable<Empleado> {
     return this.http.post<Empleado>(this.url, empleado);
   }
 
-  actualizar(documento: string, telefono: string, correo: string): Observable<Empleado> {
-    return this.http.put<Empleado>(`${this.url}/${documento}`, { telefono, correo });
+  actualizar(
+    documento: string,
+    datos: Pick<Empleado, 'telefono' | 'correo'>,
+  ): Observable<Empleado> {
+    return this.http.put<Empleado>(`${this.url}/${documento}`, datos);
   }
 
-  desvincular(documento: string): Observable<void> {
-    return this.http.patch<void>(`${this.url}/${documento}/desvincular`, {});
+  desvincular(documento: string): Observable<Empleado> {
+    return this.http.patch<Empleado>(`${this.url}/${documento}/desvincular`, {});
   }
 }

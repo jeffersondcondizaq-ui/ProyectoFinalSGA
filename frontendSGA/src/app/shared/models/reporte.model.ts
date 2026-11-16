@@ -13,7 +13,12 @@ export interface IngresosPeriodo {
   total: number;
 }
 
-export type ReservasPorCanal = Record<Canal, number>;
+export interface ReservasPorCanal {
+  canal: Canal;
+  total: number;
+  canceladas: number;
+  noShow: number;
+}
 
 export interface NovedadesApartamento {
   codigoApartamento: string;

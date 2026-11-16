@@ -36,6 +36,10 @@ export interface Empleado {
   activo: boolean;
 }
 
+export type ContratarEmpleadoRequest = Omit<Empleado, 'rol' | 'fechaContratacion' | 'activo'> & {
+  contrasena: string;
+};
+
 export interface LoginRequest {
   usuario: string;
   contrasena: string;

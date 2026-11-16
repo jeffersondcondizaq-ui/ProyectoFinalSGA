@@ -2,7 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Apartamento, Bloqueo, EstadoApartamento, Novedad, Tarifa } from '../../shared/models';
+import {
+  Apartamento,
+  ApartamentoRequest,
+  Bloqueo,
+  EstadoApartamento,
+  NovedadRequest,
+} from '../../shared/models';
 
 /** GestionApartamentoUseCase del backend. */
 @Injectable({ providedIn: 'root' })
@@ -18,31 +24,31 @@ export class ApartamentoApi {
     return this.http.get<Apartamento>(`${this.url}/${codigo}`);
   }
 
-  crear(apartamento: Apartamento): Observable<Apartamento> {
+  crear(apartamento: ApartamentoRequest): Observable<Apartamento> {
     return this.http.post<Apartamento>(this.url, apartamento);
   }
 
-  actualizar(codigo: string, apartamento: Partial<Apartamento>): Observable<Apartamento> {
-    return this.http.put<Apartamento>(`${this.url}/${codigo}`, apartamento);
+  actualizar(codigo: string, datos: Omit<ApartamentoRequest, 'codigo'>): Observable<Apartamento> {
+    return this.http.put<Apartamento>(`${this.url}/${codigo}`, datos);
   }
 
   eliminar(codigo: string): Observable<void> {
     return this.http.delete<void>(`${this.url}/${codigo}`);
   }
 
-  definirTarifas(codigo: string, tarifas: Tarifa[]): Observable<Apartamento> {
-    return this.http.put<Apartamento>(`${this.url}/${codigo}/tarifas`, tarifas);
+  registrarBloqueo(codigo: string, bloqueo: Bloqueo): Observable<Apartamento> {
+    return this.http.post<Apartamento>(`${this.url}/${codigo}/bloqueos`, bloqueo);
   }
 
-  registrarBloqueo(codigo: string, bloqueo: Bloqueo): Observable<void> {
-    return this.http.post<void>(`${this.url}/${codigo}/bloqueos`, bloqueo);
+  cambiarEstado(
+    codigo: string,
+    estado: EstadoApartamento,
+    motivo?: string,
+  ): Observable<Apartamento> {
+    return this.http.patch<Apartamento>(`${this.url}/${codigo}/estado`, { estado, motivo });
   }
 
-  cambiarEstado(codigo: string, estado: EstadoApartamento, motivo?: string): Observable<void> {
-    return this.http.patch<void>(`${this.url}/${codigo}/estado`, { estado, motivo });
-  }
-
-  registrarNovedad(codigo: string, novedad: Novedad): Observable<void> {
+  registrarNovedad(codigo: string, novedad: NovedadRequest): Observable<void> {
     return this.http.post<void>(`${this.url}/${codigo}/novedades`, novedad);
   }
 }
