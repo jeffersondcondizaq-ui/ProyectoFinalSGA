@@ -12,6 +12,7 @@ import com.jefferson.notifications.domain.model.persona.Huesped;
 import com.jefferson.notifications.domain.model.persona.Usuario;
 import com.jefferson.notifications.domain.model.reserva.ConflictoCanal;
 import com.jefferson.notifications.domain.model.reserva.Reserva;
+import com.jefferson.notifications.domain.model.apartamento.EstadoApartamento;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -142,9 +143,52 @@ public class Alojamiento {
         }
         validarFechas(reserva.getFechaEntrada(), reserva.getFechaSalida());
         validarCapacidad(reserva.getApartamento(), reserva.getOcupantes().size());
-
+        if (!estaDisponible(reserva.getApartamento(), reserva.getFechaEntrada(), reserva.getFechaSalida())) {
+            throw new ReglaNegocioException("El apartamento " + reserva.getApartamento().getCodigo()
+                    + " no está disponible en esas fechas");
+        }
         reservas.add(reserva);
         return true;
+    }
+
+    /**
+     * Regla "sin doble venta"
+     */
+    public boolean estaDisponible(Apartamento apto, LocalDate entrada, LocalDate salida) {
+        if (apto == null || entrada == null || salida == null) {
+            return false;
+        }
+        if (!apto.isActivo() || apto.getEstado() == EstadoApartamento.FUERA_DE_SERVICIO) {
+            return false;
+        }
+        LocalDate noche = entrada;
+        while (noche.isBefore(salida)) {
+            if (apto.estaBloqueado(noche)) {
+                return false;
+            }
+            noche = noche.plusDays(1);
+        }
+        for (Reserva reserva : reservasActivasDe(apto)) {
+            if (reserva.seCruzaCon(entrada, salida)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Apartamentos que admiten esa cantidad de personas y están libres en esas fechas. */
+    public ArrayList<Apartamento> consultarDisponibles(LocalDate entrada, LocalDate salida, int personas) {
+        validarFechas(entrada, salida);
+        if (personas <= 0) {
+            throw new ReglaNegocioException("La cantidad de personas debe ser mayor que cero");
+        }
+        ArrayList<Apartamento> disponibles = new ArrayList<>();
+        for (Apartamento apto : apartamentos) {
+            if (apto.admiteOcupantes(personas) && estaDisponible(apto, entrada, salida)) {
+                disponibles.add(apto);
+            }
+        }
+        return disponibles;
     }
 
     public Apartamento buscarApartamento(String codigo) {
