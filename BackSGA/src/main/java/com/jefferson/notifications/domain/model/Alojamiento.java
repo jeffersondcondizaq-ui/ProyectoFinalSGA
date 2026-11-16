@@ -15,6 +15,8 @@ import com.jefferson.notifications.domain.model.reserva.Reserva;
 import com.jefferson.notifications.domain.model.apartamento.EstadoApartamento;
 import com.jefferson.notifications.domain.model.persona.Ocupante;
 import com.jefferson.notifications.domain.model.reserva.DetalleNoche;
+import com.jefferson.notifications.domain.model.reserva.EstadoReserva;
+import java.time.LocalDateTime;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -314,6 +316,46 @@ public class Alojamiento {
         return detalle;
     }
 
+    /**
+     * Pendiente -> Confirmada. La reserva por portal solo se confirma si ya pagó el anticipo (30%).
+     * Si pasaron más de 24 horas sin confirmar, se cancela en ese momento y se avisa.
+     */
+    public boolean confirmarReserva(String codigo) {
+        Reserva reserva = buscarReserva(codigo);
+        if (reserva.estaVencida(LocalDateTime.now())) {
+            cambiarEstado(reserva, EstadoReserva.CANCELADA);
+            throw new ReglaNegocioException("La reserva " + codigo
+                    + " venció: pasaron más de 24 horas sin confirmarse y fue cancelada");
+        }
+        if (reserva.getEstado() != EstadoReserva.PENDIENTE) {
+            throw new ReglaNegocioException("Solo se puede confirmar una reserva Pendiente (la reserva "
+                    + codigo + " está " + reserva.getEstado() + ")");
+        }
+        if (!reserva.puedeConfirmarse()) {
+            throw new ReglaNegocioException("La reserva " + codigo
+                    + " no se puede confirmar: falta pagar el anticipo del 30%");
+        }
+        cambiarEstado(reserva, EstadoReserva.CONFIRMADA);
+        return true;
+    }
+
+    /**
+     * Regla "vencimiento a 24 horas": toda reserva Pendiente creada hace más de 24 horas
+     * pasa a Cancelada y libera sus noches. La ejecuta la tarea programada.
+     *
+     * @return cuántas reservas se cancelaron
+     */
+    public int cancelarPendientesVencidas(LocalDateTime ahora) {
+        int canceladas = 0;
+        for (Reserva reserva : reservas) {
+            if (reserva.estaVencida(ahora)) {
+                cambiarEstado(reserva, EstadoReserva.CANCELADA);
+                canceladas++;
+            }
+        }
+        return canceladas;
+    }
+
     public Reserva buscarReserva(String codigo) {
         for (Reserva reserva : reservas) {
             if (reserva.getCodigo().equals(codigo)) {
@@ -394,6 +436,15 @@ public class Alojamiento {
         if (!apartamento.admiteOcupantes(cantidadOcupantes)) {
             throw new ReglaNegocioException("El apartamento " + apartamento.getCodigo() + " admite máximo "
                     + apartamento.getCapacidadMaxima() + " personas");
+        }
+    }
+
+    /** Solo permite las transiciones de la tabla del enunciado (EstadoReserva.puedePasarA). */
+    private void cambiarEstado(Reserva reserva, EstadoReserva nuevo) {
+        EstadoReserva actual = reserva.getEstado();
+        if (!reserva.cambiarEstado(nuevo)) {
+            throw new ReglaNegocioException("La reserva " + reserva.getCodigo() + " no puede pasar de "
+                    + actual + " a " + nuevo);
         }
     }
 

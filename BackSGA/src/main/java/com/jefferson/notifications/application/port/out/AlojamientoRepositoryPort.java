@@ -1,4 +1,10 @@
 package com.jefferson.notifications.application.port.out;
 
-public class AlojamientoRepositoryPort {
+import com.jefferson.notifications.domain.model.Alojamiento;
+
+public interface AlojamientoRepositoryPort {
+
+    Alojamiento obtener();
+
+    void guardar(Alojamiento alojamiento);
 }

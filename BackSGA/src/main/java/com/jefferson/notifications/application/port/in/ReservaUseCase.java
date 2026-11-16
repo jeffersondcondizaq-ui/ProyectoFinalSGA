@@ -1,4 +1,9 @@
 package com.jefferson.notifications.application.port.in;
 
-public class ReservaUseCase {
+import java.time.LocalDateTime;
+
+public interface ReservaUseCase {
+    boolean confirmarReserva(String codigo);
+
+    int cancelarPendientesVencidas(LocalDateTime ahora);
 }

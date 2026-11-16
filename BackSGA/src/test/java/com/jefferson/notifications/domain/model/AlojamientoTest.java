@@ -13,6 +13,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import com.jefferson.notifications.domain.model.apartamento.TipoTemporada;
 import com.jefferson.notifications.domain.model.configuracion.PeriodoTemporada;
 import com.jefferson.notifications.domain.model.reserva.DetalleNoche;
+import com.jefferson.notifications.domain.model.folio.MedioPago;
+import com.jefferson.notifications.domain.model.folio.Pago;
+import com.jefferson.notifications.domain.model.reserva.ReservaPortal;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -273,5 +277,77 @@ class AlojamientoTest {
                 () -> alojamiento.cotizar("APT-101", hoy.plusDays(3), hoy.plusDays(1), ocupantes(1)));
         assertThrows(ReglaNegocioException.class,
                 () -> alojamiento.cotizar("APT-101", hoy.plusDays(1), hoy.plusDays(3), ocupantes(3)));
+    }
+    // ---------------- Regla: ciclo de vida y vencimiento a 24 horas ----------------
+
+    private final LocalDateTime ahora = LocalDateTime.now();
+
+    @Test
+    void confirmaUnaReservaDirectaPendiente() {
+        alojamiento.crearReserva(reserva("R-1", hoy.plusDays(1), hoy.plusDays(3)));
+        assertTrue(alojamiento.confirmarReserva("R-1"));
+        assertEquals(EstadoReserva.CONFIRMADA, alojamiento.buscarReserva("R-1").getEstado());
+    }
+
+    @Test
+    void noConfirmaDosVeces() {
+        alojamiento.crearReserva(reserva("R-1", hoy.plusDays(1), hoy.plusDays(3)));
+        alojamiento.confirmarReserva("R-1");
+        assertThrows(ReglaNegocioException.class, () -> alojamiento.confirmarReserva("R-1"));
+    }
+
+    @Test
+    void noConfirmaUnaReservaCancelada() {
+        ReservaDirecta cancelada = reserva("R-1", hoy.plusDays(1), hoy.plusDays(3));
+        alojamiento.crearReserva(cancelada);
+        cancelada.cambiarEstado(EstadoReserva.CANCELADA);
+        assertThrows(ReglaNegocioException.class, () -> alojamiento.confirmarReserva("R-1"));
+        assertEquals(EstadoReserva.CANCELADA, cancelada.getEstado());
+    }
+
+    @Test
+    void laReservaPorPortalNecesitaElAnticipoParaConfirmarse() {
+        definirTarifas();
+        ArrayList<Ocupante> grupo = ocupantes(1);
+        ArrayList<DetalleNoche> detalle = alojamiento.cotizar("APT-101", hoy.plusDays(1), hoy.plusDays(3), grupo);
+        ReservaPortal web = new ReservaPortal("R-1", laura, apartamento, hoy.plusDays(1), hoy.plusDays(3),
+                grupo, detalle, alojamiento.getPoliticaCancelacion());
+        alojamiento.crearReserva(web);
+
+        // Valor 200.000: anticipo 60.000. Sin pagar no se confirma
+        assertThrows(ReglaNegocioException.class, () -> alojamiento.confirmarReserva("R-1"));
+
+        web.getFolio().registrarPago(new Pago(MedioPago.TARJETA, 60_000, "Anticipo 30%", false));
+        assertTrue(alojamiento.confirmarReserva("R-1"));
+    }
+
+    @Test
+    void cancelaLasPendientesDeMasDe24Horas() {
+        alojamiento.crearReserva(reserva("R-1", hoy.plusDays(1), hoy.plusDays(3)));
+        assertEquals(1, alojamiento.cancelarPendientesVencidas(ahora.plusHours(25)));
+        assertEquals(EstadoReserva.CANCELADA, alojamiento.buscarReserva("R-1").getEstado());
+    }
+
+    @Test
+    void noCancelaAntesDeLas24Horas() {
+        alojamiento.crearReserva(reserva("R-1", hoy.plusDays(1), hoy.plusDays(3)));
+        assertEquals(0, alojamiento.cancelarPendientesVencidas(ahora.plusHours(23)));
+        assertEquals(EstadoReserva.PENDIENTE, alojamiento.buscarReserva("R-1").getEstado());
+    }
+
+    @Test
+    void lasConfirmadasNoVencen() {
+        alojamiento.crearReserva(reserva("R-1", hoy.plusDays(1), hoy.plusDays(3)));
+        alojamiento.confirmarReserva("R-1");
+        assertEquals(0, alojamiento.cancelarPendientesVencidas(ahora.plusDays(3)));
+        assertEquals(EstadoReserva.CONFIRMADA, alojamiento.buscarReserva("R-1").getEstado());
+    }
+
+    @Test
+    void alVencerseLiberaLasNoches() {
+        alojamiento.crearReserva(reserva("R-1", hoy.plusDays(1), hoy.plusDays(3)));
+        assertFalse(alojamiento.estaDisponible(apartamento, hoy.plusDays(1), hoy.plusDays(3)));
+        alojamiento.cancelarPendientesVencidas(ahora.plusHours(25));
+        assertTrue(alojamiento.estaDisponible(apartamento, hoy.plusDays(1), hoy.plusDays(3)));
     }
 }
